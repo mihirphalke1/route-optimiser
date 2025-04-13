@@ -46,7 +46,7 @@ An intelligent route optimization tool with interactive visualizations, powered 
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/route-optimizer.git
+git clone https://github.com/mihirphalke1/route-optimizer.git
 cd route-optimizer
 
 # Install dependencies

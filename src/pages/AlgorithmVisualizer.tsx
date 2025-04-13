@@ -148,6 +148,10 @@ const AlgorithmVisualizer = () => {
       toast.info("Add Node Mode", {
         description: "Click anywhere on the canvas to add a new node.",
       });
+    } else {
+      toast.info("Add Node Mode Disabled", {
+        description: "You've exited node adding mode.",
+      });
     }
   };
 
@@ -161,6 +165,23 @@ const AlgorithmVisualizer = () => {
           Create nodes, add connections with weights, and visualize how
           Dijkstra's algorithm finds the shortest path
         </p>
+
+        <div className="flex items-center mt-2 gap-3">
+          <Button
+            onClick={toggleAddingNode}
+            variant={isAddingNode ? "default" : "outline"}
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            {isAddingNode ? "Adding Nodes (Click to Disable)" : "Add Nodes"}
+          </Button>
+
+          {isAddingNode && (
+            <p className="text-sm text-muted-foreground">
+              Click anywhere on the canvas below to add nodes
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="flex-grow grid grid-cols-1 md:grid-cols-4 gap-4 p-4 container mx-auto">

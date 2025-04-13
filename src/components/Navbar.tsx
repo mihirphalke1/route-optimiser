@@ -1,11 +1,15 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Route, Map, Home } from "lucide-react";
+import { Route, Map, Home, Network } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
+import { useScrollTop } from "@/hooks/useScrollTop";
 
 const Navbar: React.FC = () => {
   const location = useLocation();
+
+  // Use the scroll-to-top hook
+  useScrollTop();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -13,7 +17,7 @@ const Navbar: React.FC = () => {
         <div className="flex items-center gap-2">
           <Route className="h-6 w-6 text-primary" />
           <Link to="/" className="text-xl font-semibold">
-            Route Optimizer
+            Route Optimiser
           </Link>
         </div>
         <div className="flex items-center gap-4">
@@ -37,11 +41,18 @@ const Navbar: React.FC = () => {
               Trip Planner
             </Button>
           </Link>
-          <Link to="/app">
+          <Link to="/visualizer">
             <Button
-              variant={location.pathname === "/app" ? "default" : "ghost"}
+              variant={
+                location.pathname === "/visualizer" ||
+                location.pathname === "/app"
+                  ? "default"
+                  : "ghost"
+              }
+              className="gap-2"
             >
-              Route Designer
+              <Network className="h-4 w-4" />
+              Dijkstra Visualizer
             </Button>
           </Link>
           <ThemeToggle />

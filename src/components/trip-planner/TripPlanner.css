@@ -222,4 +222,142 @@
   .flex-1 {
     height: 60%;
   }
+
+  /* Main layout adjustments */
+  .flex.flex-1.overflow-hidden {
+    flex-direction: column;
+  }
+
+  /* Sidebar width */
+  .w-80,
+  .md\\:w-96 {
+    width: 100% !important;
+    max-width: 100%;
+    height: auto;
+    max-height: 50vh;
+    border-right: none;
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  /* Map container */
+  .flex-1.relative {
+    height: 50vh;
+  }
+
+  /* Scrollable areas */
+  [class*="h-[calc"] {
+    height: auto;
+    max-height: 200px;
+  }
+
+  /* Buttons */
+  button {
+    min-height: 36px;
+  }
+
+  /* Dialog improvements */
+  [class*="max-w-4xl"] {
+    width: 95vw;
+    max-height: 90vh;
+  }
+
+  /* Grid layouts */
+  [class*="grid-cols-2"][class*="grid-cols-4"] {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* Map controls */
+  .absolute.right-4.top-4.z-\\[1000\\] button {
+    padding: 6px;
+  }
+
+  /* Improve scroll */
+  .overflow-y-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Additional mobile responsive adjustments */
+@media (max-width: 768px) {
+  /* Main layout adjustments */
+  .flex.flex-1.overflow-hidden {
+    flex-direction: column;
+  }
+
+  /* Sidebar width handling */
+  .w-80,
+  .w-96,
+  .md\:w-96 {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: 50vh;
+    border-right: none;
+    border-bottom: 1px solid hsl(var(--border));
+    overflow-y: auto;
+  }
+
+  /* Map container */
+  .flex-1.relative {
+    height: 50vh;
+  }
+
+  /* Adjust scrollable areas */
+  .h-\[calc\(100vh-24rem\)] {
+    height: auto;
+    max-height: 200px;
+  }
+
+  /* Make buttons more touchable */
+  button {
+    min-height: 36px;
+  }
+
+  /* Adjust RouteAnalysis dialog for mobile */
+  .max-w-4xl.max-h-\[85vh\] {
+    width: 95vw;
+    height: 90vh;
+    max-height: 90vh;
+  }
+
+  /* Fix grid layouts in dialogs */
+  .grid.grid-cols-2.md\:grid-cols-4 {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* Fix map controls for better touch targets */
+  .absolute.right-4.top-4.z-\[1000\] .p-1 {
+    padding: 6px;
+  }
+
+  /* Improve overflow handling */
+  .overflow-y-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Fix z-index for dialogs and map controls */
+[role="dialog"] {
+  z-index: 2000 !important;
+}
+
+[data-state="open"][role="dialog"] {
+  z-index: 2000 !important;
+}
+
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 1000;
+}
+
+/* Make sure map controls don't overlay dialog */
+.absolute.right-4.top-4.z-\[1000\] {
+  z-index: 1000;
+}
+
+/* Style map differently in dark mode */
+.dark .leaflet-container {
+  filter: brightness(0.8) contrast(1.2);
 }

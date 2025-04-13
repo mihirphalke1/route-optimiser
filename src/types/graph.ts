@@ -1,4 +1,3 @@
-
 // Node and edge types for our graph visualization
 
 export interface Position {
@@ -6,7 +5,9 @@ export interface Position {
   y: number;
 }
 
-export interface BusStop {
+export type MetricType = "cost" | "time" | "distance";
+
+export interface NodePoint {
   id: string;
   label: string;
   position: Position;
@@ -14,37 +15,36 @@ export interface BusStop {
     lat?: number;
     lon?: number;
     realWorld?: boolean;
-    address?: string;
+    [key: string]: any;
   };
 }
 
-export interface BusRoute {
+export interface Edge {
   id: string;
   source: string;
   target: string;
   cost: number;
-  time?: number;
-  distance?: number;
+  time: number;
+  distance: number;
 }
 
 export interface GraphData {
-  nodes: BusStop[];
-  edges: BusRoute[];
+  nodes: NodePoint[];
+  edges: Edge[];
 }
-
-export type MetricType = 'cost' | 'time' | 'distance';
 
 export interface DijkstraStep {
   currentNode: string;
   visitedNodes: string[];
   distances: Record<string, number>;
-  previousNodes: Record<string, string | null>;
-  shortestPath?: string[];
+  path: string[];
 }
 
 export interface DijkstraResult {
+  nodes: NodePoint[];
+  edges: Edge[];
   path: string[];
-  distance: number;
   steps: DijkstraStep[];
-  noPathFound?: boolean;
+  distance: number;
+  noPathFound: boolean;
 }

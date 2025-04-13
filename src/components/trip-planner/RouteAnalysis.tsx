@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { BarChart3, ChevronRight, FileSpreadsheet } from "lucide-react";
+import { BarChart3, ChevronRight, FileSpreadsheet, Route } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 
@@ -89,30 +89,37 @@ const RouteAnalysis: React.FC<RouteAnalysisProps> = ({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2">
+        <Button variant="default" size="sm" className="gap-2 w-full">
           <BarChart3 className="h-4 w-4" />
-          Route Analysis
+          <span>Route Analysis</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle>Route Optimization Analysis</DialogTitle>
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col z-[2000]">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-xl flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-primary" />
+            Route Optimization Analysis
+          </DialogTitle>
           <DialogDescription>
-            Detailed analysis of the optimal route and distance matrix
+            Detailed analysis of the optimal route between all selected
+            locations
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-6 overflow-hidden">
+        <div className="flex flex-col gap-6 overflow-y-auto pr-1">
           {/* Route Summary */}
           <div>
-            <h3 className="text-lg font-semibold mb-2">Route Summary</h3>
-            <Card className="p-4 bg-primary/5 dark:bg-primary/10">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <FileSpreadsheet className="h-5 w-5 text-primary opacity-80" />
+              Route Summary
+            </h3>
+            <Card className="p-5 bg-primary/5 dark:bg-primary/10 border-primary/20">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div>
                   <div className="text-sm text-muted-foreground">
                     Total Distance
                   </div>
-                  <div className="text-xl font-bold">
+                  <div className="text-xl font-bold text-primary">
                     {(totalDistance / 1000).toFixed(2)} km
                   </div>
                 </div>
@@ -120,7 +127,10 @@ const RouteAnalysis: React.FC<RouteAnalysisProps> = ({
                   <div className="text-sm text-muted-foreground">
                     Number of Stops
                   </div>
-                  <div className="text-xl font-bold">{locations.length}</div>
+                  <div className="text-xl font-bold">
+                    {locations.length} location
+                    {locations.length !== 1 ? "s" : ""}
+                  </div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">
@@ -146,31 +156,45 @@ const RouteAnalysis: React.FC<RouteAnalysisProps> = ({
           </div>
 
           {/* Step by Step Route */}
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Step-by-Step Route</h3>
-            <ScrollArea className="h-40">
-              <div className="space-y-2">
+          <div className="bg-card border rounded-lg p-4">
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Route className="h-5 w-5 text-primary opacity-80" />
+              Step-by-Step Route
+            </h3>
+            <ScrollArea className="h-56">
+              <div className="space-y-3">
                 {routeSegments.map((segment, index) => (
                   <div
                     key={index}
-                    className="flex items-center gap-2 p-2 rounded-md bg-card"
+                    className="flex items-center gap-3 p-3 rounded-md border border-muted bg-background/50"
                   >
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center bg-primary text-primary-foreground text-xs">
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center bg-primary text-primary-foreground text-xs font-medium">
                       {index + 1}
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-medium">
                           {getShortName(segment.from.name)}
                         </span>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                         <span className="font-medium">
                           {getShortName(segment.to.name)}
                         </span>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {(segment.distance / 1000).toFixed(2)} km (total:{" "}
-                        {(segment.cumulativeDistance / 1000).toFixed(2)} km)
+                      <div className="text-sm text-muted-foreground mt-1">
+                        <span className="inline-flex items-center">
+                          Distance:{" "}
+                          <span className="font-medium ml-1">
+                            {(segment.distance / 1000).toFixed(2)} km
+                          </span>
+                        </span>
+                        <span className="mx-2">•</span>
+                        <span className="inline-flex items-center">
+                          Running total:{" "}
+                          <span className="font-medium ml-1">
+                            {(segment.cumulativeDistance / 1000).toFixed(2)} km
+                          </span>
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -180,71 +204,138 @@ const RouteAnalysis: React.FC<RouteAnalysisProps> = ({
           </div>
 
           {/* Adjacency Matrix - Distance between all points */}
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Distance Matrix</h3>
-            <p className="text-sm text-muted-foreground mb-2">
-              The adjacency matrix shows the distance (in km) between each pair
+          <div className="bg-card border rounded-lg p-4">
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <svg
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                className="text-primary opacity-80"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M3 9h18" />
+                <path d="M9 3v18" />
+              </svg>
+              Distance Matrix
+            </h3>
+            <p className="text-sm text-muted-foreground mb-3 max-w-3xl">
+              The distance matrix shows the distance (in km) between each pair
               of locations. The optimization algorithm uses this data to find
               the shortest path visiting all locations.
             </p>
-            <ScrollArea className="h-64 w-full">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[100px]">From \ To</TableHead>
-                    {locations.map((loc) => (
-                      <TableHead key={loc.id}>
-                        {getShortName(loc.name)}
+            <div className="border rounded-md">
+              <ScrollArea className="h-64 w-full">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/40">
+                      <TableHead className="w-[100px] font-bold">
+                        From \ To
                       </TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {locations.map((fromLoc) => (
-                    <TableRow key={fromLoc.id}>
-                      <TableCell className="font-medium">
-                        {getShortName(fromLoc.name)}
-                      </TableCell>
-                      {locations.map((toLoc) => (
-                        <TableCell key={toLoc.id}>
-                          {fromLoc.id === toLoc.id
-                            ? "—"
-                            : (
-                                (distanceMatrix
-                                  ?.get(fromLoc.id)
-                                  ?.get(toLoc.id) || 0) / 1000
-                              ).toFixed(2)}
-                        </TableCell>
+                      {locations.map((loc) => (
+                        <TableHead key={loc.id} className="font-bold">
+                          {getShortName(loc.name)}
+                        </TableHead>
                       ))}
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </ScrollArea>
+                  </TableHeader>
+                  <TableBody>
+                    {locations.map((fromLoc) => (
+                      <TableRow key={fromLoc.id}>
+                        <TableCell className="font-medium bg-muted/20">
+                          {getShortName(fromLoc.name)}
+                        </TableCell>
+                        {locations.map((toLoc) => (
+                          <TableCell
+                            key={toLoc.id}
+                            className={
+                              fromLoc.id === toLoc.id
+                                ? "bg-muted/40 text-muted-foreground"
+                                : ""
+                            }
+                          >
+                            {fromLoc.id === toLoc.id
+                              ? "—"
+                              : (
+                                  (distanceMatrix
+                                    ?.get(fromLoc.id)
+                                    ?.get(toLoc.id) || 0) / 1000
+                                ).toFixed(2)}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            </div>
           </div>
 
           {/* Why This Route Section */}
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Why This Is Optimal</h3>
-            <div className="text-sm text-muted-foreground space-y-2">
-              <p>
-                The route was calculated using a combination of Dijkstra's
-                algorithm and the Nearest Neighbor algorithm with 2-opt
-                improvement to solve the Traveling Salesperson Problem.
-              </p>
-              <p>
-                Out of the{" "}
-                {locations.length > 0
-                  ? factorial(locations.length - 1).toLocaleString()
-                  : 0}{" "}
-                possible routes, this is the shortest path that visits all
-                locations and returns to the starting point.
-              </p>
-              <p>
-                Each segment between locations is optimized using real-world
-                road distances rather than straight-line distances, ensuring
-                that the route follows actual roads and highways.
-              </p>
+          <div className="bg-primary/5 dark:bg-primary/10 border-primary/20 rounded-lg p-5 mb-3">
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 text-primary">
+              <svg
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                className="opacity-80"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4" />
+                <path d="M12 8h.01" />
+              </svg>
+              Why This Route Is Optimal
+            </h3>
+            <div className="text-sm space-y-3">
+              <div className="flex items-start gap-2">
+                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center mt-0.5 shrink-0">
+                  <span className="text-xs font-medium text-primary">1</span>
+                </div>
+                <p>
+                  <span className="font-medium">Algorithm combination:</span>{" "}
+                  The route was calculated using a combination of Dijkstra's
+                  algorithm and the Nearest Neighbor algorithm with 2-opt
+                  improvement to solve the Traveling Salesperson Problem.
+                </p>
+              </div>
+
+              <div className="flex items-start gap-2">
+                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center mt-0.5 shrink-0">
+                  <span className="text-xs font-medium text-primary">2</span>
+                </div>
+                <p>
+                  <span className="font-medium">Computational efficiency:</span>{" "}
+                  Out of the{" "}
+                  <span className="font-bold text-primary">
+                    {locations.length > 0
+                      ? factorial(locations.length - 1).toLocaleString()
+                      : 0}{" "}
+                  </span>
+                  possible routes, this is the shortest path that visits all
+                  locations and returns to the starting point.
+                </p>
+              </div>
+
+              <div className="flex items-start gap-2">
+                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center mt-0.5 shrink-0">
+                  <span className="text-xs font-medium text-primary">3</span>
+                </div>
+                <p>
+                  <span className="font-medium">Real-world navigation:</span>{" "}
+                  Each segment between locations is optimized using real-world
+                  road distances rather than straight-line distances, ensuring
+                  that the route follows actual roads and highways.
+                </p>
+              </div>
             </div>
           </div>
         </div>

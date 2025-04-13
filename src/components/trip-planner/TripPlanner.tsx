@@ -84,7 +84,10 @@ const createCustomIcon = (
 };
 
 // Map controller component
-const MapController: React.FC<{ locations: Location[] }> = ({ locations }) => {
+const MapController: React.FC<{
+  locations: Location[];
+  optimalRoute: [number, number][];
+}> = ({ locations, optimalRoute }) => {
   const map = useMap();
 
   useEffect(() => {
@@ -93,6 +96,18 @@ const MapController: React.FC<{ locations: Location[] }> = ({ locations }) => {
       map.fitBounds(bounds, { padding: [50, 50] });
     }
   }, [locations, map]);
+
+  // Auto-adjust zoom when optimal route is calculated
+  useEffect(() => {
+    if (optimalRoute.length > 0) {
+      const bounds = L.latLngBounds(optimalRoute);
+      // Add extra padding to make sure all nodes are comfortably visible
+      map.fitBounds(bounds, {
+        padding: [70, 70],
+        maxZoom: 12, // Limit the maximum zoom to ensure we don't zoom in too much
+      });
+    }
+  }, [optimalRoute, map]);
 
   return null;
 };
@@ -176,31 +191,6 @@ const AlgorithmExplanation: React.FC = () => {
         </div>
       </DialogContent>
     </Dialog>
-  );
-};
-
-const TripPlannerHeader: React.FC = () => {
-  return (
-    <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Route className="h-6 w-6 text-primary" />
-          <span className="text-xl font-semibold">Smart Trip Planner</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <Link to="/">
-            <Button variant="ghost" className="gap-2">
-              <Home className="h-4 w-4" />
-              Home
-            </Button>
-          </Link>
-          <Link to="/app">
-            <Button variant="ghost">Route Designer</Button>
-          </Link>
-          <ThemeToggle />
-        </div>
-      </div>
-    </header>
   );
 };
 
@@ -468,8 +458,8 @@ const TripPlanner = ({ defaultCenter = [51.505, -0.09] }: TripPlannerProps) => {
     <div className="flex flex-col h-full bg-background text-foreground">
       <div className="flex flex-1 overflow-hidden">
         {/* Side Panel */}
-        <div className="w-96 p-4 border-r border-border overflow-y-auto">
-          <div className="space-y-4">
+        <div className="w-80 md:w-96 p-5 border-r border-border overflow-y-auto">
+          <div className="space-y-5">
             <div className="relative">
               <Input
                 type="text"
@@ -492,20 +482,20 @@ const TripPlanner = ({ defaultCenter = [51.505, -0.09] }: TripPlannerProps) => {
             )}
 
             {searchResults.length > 0 && (
-              <Card className="p-2">
+              <Card className="p-3 shadow-sm">
                 <ScrollArea className="h-40">
                   {searchResults.map((result) => (
                     <div
                       key={result.place_id}
-                      className="p-2 hover:bg-gray-100 cursor-pointer flex items-center search-result-item"
+                      className="p-2 hover:bg-muted cursor-pointer flex items-center search-result-item"
                       onClick={() => addLocation(result)}
                     >
-                      <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                      <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
                       <div>
                         <div className="font-medium">
                           {result.display_name.split(",")[0]}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-muted-foreground">
                           {result.display_name
                             .split(",")
                             .slice(1)
@@ -519,129 +509,143 @@ const TripPlanner = ({ defaultCenter = [51.505, -0.09] }: TripPlannerProps) => {
               </Card>
             )}
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold">Selected Locations</h3>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={clearRoute}
-                    disabled={optimalRoute.length === 0}
-                  >
-                    Clear Route
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={calculateOptimalRoute}
-                    disabled={locations.length < 2 || isCalculating}
-                  >
-                    {isCalculating ? (
-                      <RefreshCw className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Route className="h-4 w-4 mr-1" />
-                    )}
-                    Find Best Route
-                  </Button>
+                <h3 className="font-semibold text-lg">Selected Locations</h3>
+              </div>
 
-                  {showOptimizedOrder && optimalRoute.length > 0 && (
-                    <RouteAnalysis
-                      locations={optimizedLocations}
-                      totalDistance={totalDistance}
-                      distanceMatrix={routeOptimizerRef.current.distanceMatrix}
-                      optimalRoute={optimalRoute}
-                    />
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearRoute}
+                  disabled={optimalRoute.length === 0}
+                  className="flex-grow"
+                >
+                  <RotateCcw className="h-4 w-4 mr-1.5" /> Clear Route
+                </Button>
+                <Button
+                  variant={locations.length >= 2 ? "default" : "outline"}
+                  size="sm"
+                  onClick={calculateOptimalRoute}
+                  disabled={locations.length < 2 || isCalculating}
+                  className="flex-grow"
+                >
+                  {isCalculating ? (
+                    <RefreshCw className="h-4 w-4 animate-spin mr-1.5" />
+                  ) : (
+                    <Route className="h-4 w-4 mr-1.5" />
                   )}
-                </div>
+                  Find Best Route
+                </Button>
               </div>
 
               {totalDistance > 0 && (
-                <Card className="p-3 mb-2 bg-primary/5 dark:bg-primary/10">
-                  <div className="text-sm text-primary dark:text-primary flex items-center justify-between">
-                    <span>
-                      Total Distance: {(totalDistance / 1000).toFixed(1)} km
-                    </span>
+                <Card className="p-4 mb-3 bg-primary/5 dark:bg-primary/10 border-primary/20">
+                  <div className="text-sm flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-base text-primary">
+                        Total Distance: {(totalDistance / 1000).toFixed(1)} km
+                      </span>
+                      {showOptimizedOrder && (
+                        <Badge variant="secondary">Optimized</Badge>
+                      )}
+                    </div>
+
                     {showOptimizedOrder && (
-                      <Badge variant="secondary">Optimized</Badge>
+                      <>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={
+                                    isAnimating ? stopAnimation : startAnimation
+                                  }
+                                  disabled={!optimalRoute.length}
+                                  className="flex-grow"
+                                >
+                                  {isAnimating ? (
+                                    <>
+                                      <Pause className="h-3 w-3 mr-1.5" /> Stop
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Play className="h-3 w-3 mr-1.5" />{" "}
+                                      Animate
+                                    </>
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>See how the algorithm discovers the route</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+
+                          <div className="flex gap-1.5">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={shareRoute}
+                                  >
+                                    <Share2 className="h-3 w-3" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Share this route</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={exportRouteData}
+                                  >
+                                    <Download className="h-3 w-3" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Export route data</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                        </div>
+
+                        {/* Route Analysis Button - Make it more prominent */}
+                        <div className="mt-2">
+                          <RouteAnalysis
+                            locations={optimizedLocations}
+                            totalDistance={totalDistance}
+                            distanceMatrix={
+                              routeOptimizerRef.current.distanceMatrix
+                            }
+                            optimalRoute={optimalRoute}
+                          />
+                        </div>
+
+                        <div className="mt-1">
+                          <AlgorithmExplanation />
+                        </div>
+                      </>
                     )}
                   </div>
-
-                  {showOptimizedOrder && (
-                    <div className="flex justify-between mt-2">
-                      <div className="flex gap-1">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={
-                                  isAnimating ? stopAnimation : startAnimation
-                                }
-                                disabled={!optimalRoute.length}
-                              >
-                                {isAnimating ? (
-                                  <>
-                                    <Pause className="h-3 w-3 mr-1" /> Stop
-                                  </>
-                                ) : (
-                                  <>
-                                    <Play className="h-3 w-3 mr-1" /> Animate
-                                  </>
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>See how the algorithm discovers the route</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={shareRoute}
-                              >
-                                <Share2 className="h-3 w-3" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Share this route</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={exportRouteData}
-                              >
-                                <Download className="h-3 w-3" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Export route data</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-
-                      <AlgorithmExplanation />
-                    </div>
-                  )}
                 </Card>
               )}
 
               {locations.length === 0 && (
-                <Card className="p-4 text-center text-gray-500">
-                  <AlertCircle className="h-6 w-6 mx-auto mb-2" />
+                <Card className="p-4 text-center text-muted-foreground">
+                  <AlertCircle className="h-6 w-6 mx-auto mb-2 opacity-70" />
                   <p>
                     No locations added yet. Search and add locations to plan
                     your trip.
@@ -649,27 +653,30 @@ const TripPlanner = ({ defaultCenter = [51.505, -0.09] }: TripPlannerProps) => {
                 </Card>
               )}
 
-              <ScrollArea className="h-96">
+              <ScrollArea className="mt-2 h-[calc(100vh-24rem)] min-h-[150px]">
                 {displayLocations.map((location, index) => (
-                  <Card key={location.id} className="p-3 mb-2 location-card">
+                  <Card
+                    key={location.id}
+                    className="p-3 mb-3 location-card border border-muted"
+                  >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center">
+                      <div className="flex items-center gap-2.5">
                         <div
-                          className={`w-6 h-6 rounded-full ${
+                          className={`w-7 h-7 rounded-full ${
                             index === 0
                               ? "bg-green-500"
                               : index === displayLocations.length - 1
                               ? "bg-red-500"
-                              : "bg-blue-500"
-                          } text-white flex items-center justify-center text-xs mr-2`}
+                              : "bg-primary"
+                          } text-white flex items-center justify-center text-xs font-medium shadow-sm`}
                         >
                           {location.order}
                         </div>
                         <div>
-                          <div className="font-medium">
+                          <div className="font-medium leading-tight">
                             {location.name.split(",")[0]}
                           </div>
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-muted-foreground mt-0.5">
                             {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
                           </div>
                         </div>
@@ -679,6 +686,7 @@ const TripPlanner = ({ defaultCenter = [51.505, -0.09] }: TripPlannerProps) => {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeLocation(location.id)}
+                          className="h-8 w-8 p-0 rounded-full hover:bg-destructive/10"
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -687,7 +695,7 @@ const TripPlanner = ({ defaultCenter = [51.505, -0.09] }: TripPlannerProps) => {
 
                     {showOptimizedOrder &&
                       index < displayLocations.length - 1 && (
-                        <div className="mt-2 flex items-center text-sm text-gray-500">
+                        <div className="mt-2 flex items-center text-sm text-muted-foreground">
                           <Separator className="flex-1" />
                           <ArrowRight className="h-3 w-3 mx-2" />
                           <Separator className="flex-1" />
@@ -703,14 +711,14 @@ const TripPlanner = ({ defaultCenter = [51.505, -0.09] }: TripPlannerProps) => {
         {/* Map */}
         <div className="flex-1 relative">
           {/* Map settings overlay */}
-          <div className="absolute right-4 top-4 z-[1000] flex gap-2">
+          <div className="absolute right-4 top-4 z-[900] flex gap-2">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="bg-background/80 backdrop-blur-sm"
+                    className="bg-background/80 backdrop-blur-sm shadow-md hover:bg-background/95"
                     onClick={() =>
                       setTravelMode(
                         travelMode === "driving"
@@ -733,6 +741,31 @@ const TripPlanner = ({ defaultCenter = [51.505, -0.09] }: TripPlannerProps) => {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="bg-background/80 backdrop-blur-sm shadow-md hover:bg-background/95 z-[900]"
+                    onClick={() => {
+                      if (locations.length > 0 && mapRef.current) {
+                        const bounds = L.latLngBounds(
+                          locations.map((loc) => [loc.lat, loc.lng])
+                        );
+                        mapRef.current.fitBounds(bounds, { padding: [50, 50] });
+                      }
+                    }}
+                  >
+                    <Home className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Center map on all locations</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
           <MapContainer
@@ -747,7 +780,7 @@ const TripPlanner = ({ defaultCenter = [51.505, -0.09] }: TripPlannerProps) => {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
 
-            <MapController locations={locations} />
+            <MapController locations={locations} optimalRoute={optimalRoute} />
 
             {displayLocations.map((location, index) => (
               <Marker

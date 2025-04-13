@@ -1,0 +1,29 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="16" cy="16" r="15" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  
+  <!-- Route Path -->
+  <path 
+    d="M8,18 C11,11 16,7 21,12 C26,17 21,24 13,23 C8,22 6,23 8,18 Z" 
+    fill="none" 
+    stroke="#3b82f6" 
+    stroke-width="2" 
+    stroke-dasharray="2,1"
+    stroke-linecap="round"
+  />
+  
+  <!-- Location Markers -->
+  <circle cx="8" cy="18" r="2.5" fill="#22c55e"/>
+  <circle cx="21" cy="12" r="2" fill="#3b82f6"/>
+  <circle cx="13" cy="23" r="2" fill="#3b82f6"/>
+  <circle cx="23" cy="19" r="2" fill="#3b82f6"/>
+  
+  <!-- Compass Rose -->
+  <g transform="translate(16, 16) scale(0.25)">
+    <circle cx="0" cy="0" r="12" fill="#f8fafc" stroke="#3b82f6" stroke-width="2"/>
+    <path d="M0,-10 L3,-3 L0,-5 L-3,-3 Z" fill="#3b82f6"/>
+    <path d="M0,10 L-3,3 L0,5 L3,3 Z" fill="#3b82f6" opacity="0.6"/>
+    <path d="M-10,0 L-3,-3 L-5,0 L-3,3 Z" fill="#3b82f6" opacity="0.6"/>
+    <path d="M10,0 L3,3 L5,0 L3,-3 Z" fill="#3b82f6" opacity="0.6"/>
+  </g>
+</svg> 

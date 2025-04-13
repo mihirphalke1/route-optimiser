@@ -1,0 +1,38 @@
+<svg width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="90" cy="90" r="85" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+  
+  <!-- Route Path -->
+  <path 
+    d="M45,100 C60,60 90,40 120,70 C150,100 120,140 75,130 C45,125 35,130 45,100 Z" 
+    fill="none" 
+    stroke="#3b82f6" 
+    stroke-width="6" 
+    stroke-dasharray="8,4"
+    stroke-linecap="round"
+  />
+  
+  <!-- Location Markers -->
+  <circle cx="45" cy="100" r="12" fill="#22c55e"/>
+  <circle cx="120" cy="70" r="10" fill="#3b82f6"/>
+  <circle cx="75" cy="130" r="10" fill="#3b82f6"/>
+  <circle cx="130" cy="110" r="10" fill="#3b82f6"/>
+  
+  <!-- Inner Circle Effects -->
+  <circle cx="45" cy="100" r="6" fill="#ffffff"/>
+  <circle cx="120" cy="70" r="5" fill="#ffffff"/>
+  <circle cx="75" cy="130" r="5" fill="#ffffff"/>
+  <circle cx="130" cy="110" r="5" fill="#ffffff"/>
+  
+  <!-- Compass Rose -->
+  <g transform="translate(90, 90) scale(0.5)">
+    <circle cx="0" cy="0" r="20" fill="#f8fafc" stroke="#3b82f6" stroke-width="2"/>
+    <path d="M0,-18 L5,-5 L0,-8 L-5,-5 Z" fill="#3b82f6"/>
+    <path d="M0,18 L-5,5 L0,8 L5,5 Z" fill="#3b82f6" opacity="0.6"/>
+    <path d="M-18,0 L-5,-5 L-8,0 L-5,5 Z" fill="#3b82f6" opacity="0.6"/>
+    <path d="M18,0 L5,5 L8,0 L5,-5 Z" fill="#3b82f6" opacity="0.6"/>
+  </g>
+  
+  <!-- Text Label -->
+  <text x="90" y="165" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="#0f172a">ROUTE OPTIMIZER</text>
+</svg> 

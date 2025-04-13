@@ -5,11 +5,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Landing from "./pages/Landing";
-import Index from "./pages/Index";
+import AlgorithmVisualizer from "./pages/AlgorithmVisualizer";
 import NotFound from "./pages/NotFound";
 import { initWasmDijkstra } from "./utils/wasmDijkstra";
 import { RouteOptimizer } from "./components/RouteOptimizer";
 import TripPlannerPage from "./pages/TripPlannerPage";
+import ScrollToTop from "./components/ScrollToTop";
+import ScrollToTopButton from "./components/ScrollToTopButton";
 
 const queryClient = new QueryClient();
 
@@ -45,9 +47,12 @@ const App = () => {
           </div>
         )}
         <Router>
+          <ScrollToTop />
+          <ScrollToTopButton />
           <Routes>
             <Route path="/" element={<Landing wasmLoaded={wasmLoaded} />} />
-            <Route path="/app" element={<Index />} />
+            <Route path="/app" element={<AlgorithmVisualizer />} />
+            <Route path="/visualizer" element={<AlgorithmVisualizer />} />
             <Route path="/route-optimizer" element={<RouteOptimizer />} />
             <Route path="/trip-planner" element={<TripPlannerPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

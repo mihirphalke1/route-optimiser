@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,7 +15,10 @@ interface LocationSearchProps {
   canvasSize: { width: number; height: number };
 }
 
-const LocationSearch: React.FC<LocationSearchProps> = ({ onLocationSelect, canvasSize }) => {
+const LocationSearch: React.FC<LocationSearchProps> = ({
+  onLocationSelect,
+  canvasSize,
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -49,7 +51,7 @@ const LocationSearch: React.FC<LocationSearchProps> = ({ onLocationSelect, canva
         {
           headers: {
             "Accept-Language": "en",
-            "User-Agent": "BusRouteOptimizer/1.0",
+            "User-Agent": "RouteOptimizer/1.0",
           },
         }
       );

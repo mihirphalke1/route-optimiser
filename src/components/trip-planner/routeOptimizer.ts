@@ -7,7 +7,7 @@ interface Location {
 }
 
 export class RouteOptimizer {
-  private distanceMatrix: Map<string, Map<string, number>>;
+  public distanceMatrix: Map<string, Map<string, number>>;
   private pathMatrix: Map<string, Map<string, [number, number][]>>;
   private locations: Location[];
 

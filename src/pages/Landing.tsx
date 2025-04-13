@@ -5,6 +5,8 @@ import {
   MapPin,
   BarChart3,
   Route,
+  Navigation,
+  Map,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -25,7 +27,10 @@ const Landing = ({ wasmLoaded = false }: LandingProps) => {
           </div>
           <div className="flex items-center gap-4">
             <Link to="/app">
-              <Button variant="ghost">Try It Now</Button>
+              <Button variant="ghost">Route Designer</Button>
+            </Link>
+            <Link to="/trip-planner">
+              <Button variant="ghost">Trip Planner</Button>
             </Link>
             <ThemeToggle />
           </div>
@@ -39,7 +44,7 @@ const Landing = ({ wasmLoaded = false }: LandingProps) => {
 
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
-              Intelligent Bus Route Optimization
+              Intelligent Route Optimization
             </h1>
             <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
               Powered by Dijkstra's Algorithm and WebAssembly for real-time,
@@ -48,9 +53,14 @@ const Landing = ({ wasmLoaded = false }: LandingProps) => {
           </div>
 
           <div className="flex flex-col gap-2 min-[400px]:flex-row justify-center mt-6">
-            <Link to="/app">
+            <Link to="/trip-planner">
               <Button size="lg" className="gap-1.5">
-                Launch Optimizer <MoveRight className="h-4 w-4" />
+                Try Smart Trip Planner <MoveRight className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Link to="/app">
+              <Button size="lg" variant="outline" className="gap-1.5">
+                Route Designer <MoveRight className="h-4 w-4" />
               </Button>
             </Link>
           </div>
@@ -64,6 +74,60 @@ const Landing = ({ wasmLoaded = false }: LandingProps) => {
         </div>
       </section>
 
+      {/* New Trip Planner Section */}
+      <section className="py-12 md:py-24 bg-muted/30">
+        <div className="container">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6">
+              <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors bg-primary/10 text-primary">
+                NEW FEATURE
+              </div>
+              <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
+                Smart Trip Planner
+              </h2>
+              <p className="text-muted-foreground text-lg">
+                Plan your journey efficiently with our advanced Smart Trip
+                Planner. Enter your destinations and let our algorithm find the
+                optimal route connecting all stops.
+              </p>
+              <ul className="space-y-2">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                  <span>
+                    Search for real-world locations using OpenStreetMap
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                  <span>Visualize your route with interactive maps</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                  <span>
+                    Optimize travel distance using Dijkstra's algorithm
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                  <span>Animated visualization of the route calculation</span>
+                </li>
+              </ul>
+              <Link to="/trip-planner">
+                <Button size="lg" className="gap-1.5">
+                  Plan Your Trip <Navigation className="h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+            <div className="rounded-lg overflow-hidden shadow-xl border">
+              <div className="aspect-video bg-black/10 dark:bg-white/5 relative flex items-center justify-center">
+                <Map className="h-24 w-24 text-primary/40" />
+                <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent opacity-50"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works */}
       <section className="py-12 md:py-24 bg-muted/50">
         <div className="container space-y-12">
@@ -72,7 +136,7 @@ const Landing = ({ wasmLoaded = false }: LandingProps) => {
               How It Works
             </h2>
             <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-              A visual guide to using our bus route optimization tool
+              A visual guide to using our route optimization tools
             </p>
           </div>
 
@@ -83,8 +147,8 @@ const Landing = ({ wasmLoaded = false }: LandingProps) => {
               </div>
               <h3 className="text-xl font-bold">1. Add Locations</h3>
               <p className="text-muted-foreground">
-                Click on the map to add bus stops or search for real-world
-                locations to create your network.
+                Search for real-world locations or click on the map to add stops
+                to your journey.
               </p>
             </div>
 
@@ -94,8 +158,8 @@ const Landing = ({ wasmLoaded = false }: LandingProps) => {
               </div>
               <h3 className="text-xl font-bold">2. Create Connections</h3>
               <p className="text-muted-foreground">
-                Connect stops to define possible routes with costs based on
-                distance, time, or custom metrics.
+                Our system automatically connects your stops and calculates
+                travel distances.
               </p>
             </div>
 
@@ -105,7 +169,7 @@ const Landing = ({ wasmLoaded = false }: LandingProps) => {
               </div>
               <h3 className="text-xl font-bold">3. Calculate Optimal Route</h3>
               <p className="text-muted-foreground">
-                Select start and end points, and watch as the algorithm finds
+                Click "Find Best Route" and watch as the algorithm calculates
                 and animates the most efficient path.
               </p>
             </div>
@@ -152,10 +216,10 @@ const Landing = ({ wasmLoaded = false }: LandingProps) => {
             </div>
 
             <div className="p-6 bg-card rounded-lg shadow-sm">
-              <h3 className="text-xl font-bold mb-2">Multiple Metrics</h3>
+              <h3 className="text-xl font-bold mb-2">Smart Trip Planning</h3>
               <p className="text-muted-foreground">
-                Optimize routes based on cost, time, or distance to meet
-                different planning requirements.
+                Plan multi-stop trips with automatic route optimization to save
+                time and fuel.
               </p>
             </div>
           </div>
@@ -169,12 +233,21 @@ const Landing = ({ wasmLoaded = false }: LandingProps) => {
             Ready to Optimize Your Routes?
           </h2>
           <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl">
-            Try our interactive tool and see how efficient your bus network can
+            Try our interactive tools and see how efficient your journeys can
             be.
           </p>
-          <Link to="/app" className="mt-4">
-            <Button size="lg">Launch the Optimizer</Button>
-          </Link>
+          <div className="flex gap-4 mt-4">
+            <Link to="/trip-planner">
+              <Button size="lg" className="gap-1.5">
+                Smart Trip Planner <Navigation className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Link to="/app">
+              <Button size="lg" variant="outline">
+                Route Designer
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -183,7 +256,7 @@ const Landing = ({ wasmLoaded = false }: LandingProps) => {
         <div className="container flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-2">
             <Route className="h-5 w-5 text-primary" />
-            <span className="text-lg font-semibold">Bus Route Optimizer</span>
+            <span className="text-lg font-semibold">Route Optimizer</span>
           </div>
           <p className="text-sm text-muted-foreground">
             © 2025 Route Mapper Flow. All rights reserved.

@@ -1,205 +1,107 @@
 # Route Optimizer
 
-<div align="center">
-  <img src="public/route-optimizer-logo.svg" width="180" alt="Route Optimizer Logo">
-  
-  <h3>Smart Trip Planning & Route Optimization</h3>
-  <p>Powered by Dijkstra's Algorithm and WebAssembly</p>
+An intelligent route optimization tool with interactive visualizations, powered by Dijkstra's algorithm and WebAssembly.
 
-  <div>
-    <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
-    <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
-    <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
-    <img src="https://img.shields.io/badge/WebAssembly-654FF0?style=for-the-badge&logo=webassembly&logoColor=white" alt="WebAssembly" />
-  </div>
-</div>
-
-## 🌟 Overview
-
-Route Optimizer is an intelligent trip planning platform that helps you find the most efficient route between multiple destinations. Using advanced algorithms like Dijkstra's, enhanced with WebAssembly performance, it calculates the optimal path to visit all your locations while minimizing travel distance and time.
-
-<div align="center">
-  <svg width="800" height="400" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
-    <!-- Main Background -->
-    <rect width="800" height="400" fill="#f8fafc" rx="12"/>
-    
-    <!-- Map Section -->
-    <rect x="400" y="50" width="350" height="300" fill="#e2e8f0" rx="8"/>
-    
-    <!-- Map Routes and Cities -->
-    <path d="M500,150 C550,120 600,200 650,180 C700,160 720,250 650,280 C580,310 520,260 500,150Z" fill="none" stroke="#3b82f6" stroke-width="3" stroke-dasharray="6,3"/>
-    
-    <!-- Map Markers -->
-    <circle cx="500" cy="150" r="10" fill="#22c55e"/>
-    <circle cx="650" cy="180" r="10" fill="#3b82f6"/>
-    <circle cx="650" cy="280" r="10" fill="#3b82f6"/>
-    <circle cx="550" cy="230" r="10" fill="#3b82f6"/>
-    
-    <!-- Distance Labels -->
-    <rect x="570" y="150" width="50" height="20" rx="4" fill="#ffffff" opacity="0.9"/>
-    <text x="595" y="164" text-anchor="middle" font-family="Arial" font-size="10" fill="#334155">78 km</text>
-    
-    <rect x="650" y="230" width="50" height="20" rx="4" fill="#ffffff" opacity="0.9"/>
-    <text x="675" y="244" text-anchor="middle" font-family="Arial" font-size="10" fill="#334155">92 km</text>
-    
-    <!-- Control Panel -->
-    <rect x="680" y="60" width="60" height="30" rx="4" fill="#ffffff" opacity="0.9"/>
-    <text x="695" y="80" text-anchor="middle" font-family="Arial" font-size="12" fill="#3b82f6">🔄 ⚙️ 📊</text>
-    
-    <!-- Sidebar -->
-    <rect x="50" y="50" width="300" height="300" fill="#ffffff" rx="8" stroke="#e2e8f0" stroke-width="2"/>
-    
-    <!-- Sidebar Header -->
-    <rect x="50" y="50" width="300" height="50" fill="#f1f5f9" rx="8 8 0 0"/>
-    <text x="120" y="82" font-family="Arial" font-weight="bold" font-size="16" fill="#0f172a">Trip Planner</text>
-    <circle cx="85" cy="75" r="12" fill="#3b82f6"/>
-    <path d="M80,75 L85,70 L90,75 L85,80 Z" fill="#ffffff"/>
-    
-    <!-- Location List -->
-    <rect x="70" y="120" width="260" height="40" rx="6" fill="#f1f5f9"/>
-    <circle cx="90" cy="140" r="10" fill="#22c55e"/>
-    <text x="90" y="144" text-anchor="middle" font-family="Arial" font-size="12" fill="#ffffff">1</text>
-    <text x="180" y="135" font-family="Arial" font-size="12" fill="#0f172a">Mumbai</text>
-    <text x="180" y="150" font-family="Arial" font-size="10" fill="#64748b">Starting Point</text>
-    
-    <rect x="70" y="170" width="260" height="40" rx="6" fill="#f1f5f9"/>
-    <circle cx="90" cy="190" r="10" fill="#3b82f6"/>
-    <text x="90" y="194" text-anchor="middle" font-family="Arial" font-size="12" fill="#ffffff">2</text>
-    <text x="180" y="185" font-family="Arial" font-size="12" fill="#0f172a">Pune</text>
-    <text x="180" y="200" font-family="Arial" font-size="10" fill="#64748b">Historical Sites</text>
-    
-    <rect x="70" y="220" width="260" height="40" rx="6" fill="#f1f5f9"/>
-    <circle cx="90" cy="240" r="10" fill="#3b82f6"/>
-    <text x="90" y="244" text-anchor="middle" font-family="Arial" font-size="12" fill="#ffffff">3</text>
-    <text x="180" y="235" font-family="Arial" font-size="12" fill="#0f172a">Lonavala</text>
-    <text x="180" y="250" font-family="Arial" font-size="10" fill="#64748b">Hill Station</text>
-    
-    <!-- Analytics Popup -->
-    <rect x="450" y="70" width="150" height="85" rx="6" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
-    <text x="525" y="95" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#0f172a">Route Analysis</text>
-    <text x="460" y="120" font-family="Arial" font-size="11" fill="#64748b">Total Distance: 285 km</text>
-    <text x="460" y="140" font-family="Arial" font-size="11" fill="#64748b">Est. Time: 3.5 hours</text>
-    
-    <!-- Features Icons -->
-    <circle cx="110" cy="330" r="20" fill="#f0f9ff"/>
-    <path d="M105,330 L110,325 L115,330 L110,335 Z" fill="#3b82f6"/>
-    
-    <circle cx="170" cy="330" r="20" fill="#f0f9ff"/>
-    <path d="M165,330 A5,5 0 0 1 175,330 A5,5 0 0 1 165,330" stroke="#3b82f6" stroke-width="2" fill="none"/>
-    
-    <circle cx="230" cy="330" r="20" fill="#f0f9ff"/>
-    <rect x="225" y="325" width="10" height="10" fill="#3b82f6"/>
-    
-    <circle cx="290" cy="330" r="20" fill="#f0f9ff"/>
-    <line x1="285" y1="325" x2="295" y2="325" stroke="#3b82f6" stroke-width="2"/>
-    <line x1="285" y1="330" x2="295" y2="330" stroke="#3b82f6" stroke-width="2"/>
-    <line x1="285" y1="335" x2="295" y2="335" stroke="#3b82f6" stroke-width="2"/>
-    
-    <!-- Button -->
-    <rect x="100" y="275" width="200" height="35" rx="6" fill="#3b82f6"/>
-    <text x="200" y="298" text-anchor="middle" font-family="Arial" font-size="14" fill="#ffffff">Find Best Route</text>
-    
-    <!-- Feature Labels -->
-    <text x="400" y="380" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#0f172a">Optimized Route Planning Made Simple</text>
-  </svg>
-</div>
-
-## ✨ Key Features
+## Features
 
 ### Smart Trip Planner
 
-- **Location Search**: Easily search for and add multiple destinations
-- **Route Optimization**: Find the most efficient path between all locations
-- **Interactive Map**: Visualize your optimized route with clear directions
-- **Time & Distance Analysis**: Get detailed insights about travel times and distances
+- **Interactive Map-Based UI**: Search for and add multiple real-world locations with an intuitive interface
+- **Location Search**: Integrated with OpenStreetMap's Nominatim API for global location search
+- **Optimal Route Calculation**: Uses Dijkstra's algorithm to find the shortest path connecting all locations
+- **Visual Route Display**: Shows the optimized route on an interactive map with numbered markers
+- **Animation**: Visualizes how the algorithm discovers the route step-by-step
+- **Educational Component**: Includes explanations about how the algorithm works
+- **Travel Statistics**: Shows total distance and provides an ordered list of stops
+- **Dark/Light Mode Support**: Fully integrated with the application theme system for comfortable viewing in any environment
+- **Export and Share**: Export your optimized routes as JSON data or share them with others
+- **Travel Mode Options**: Choose between driving, walking, or cycling modes
 
-### Dijkstra's Algorithm Visualizer
+### Route Designer
 
-- **Build Custom Graphs**: Create networks with nodes and weighted edges
-- **Step-by-Step Visualization**: Watch how the algorithm discovers the optimal path
-- **Educational Tool**: Understand the inner workings of path-finding algorithms
+- **Custom Network Creation**: Design your own network of nodes and connections
+- **Weighted Paths**: Assign custom weights to connections based on distance, time, or other metrics
+- **Real-time Calculation**: Instantly find the shortest path using Dijkstra's algorithm
+- **Step-by-Step Visualization**: Watch how the algorithm explores the graph to find the optimal solution
+- **High Performance**: Core algorithm compiled to WebAssembly for near-native speed
 
-### Technical Highlights
+## Technologies Used
 
-- **WebAssembly Integration**: High-performance route calculations
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
-- **Real-time Updates**: Instant feedback as you modify your route
-- **Shareable Routes**: Save and share your optimized journeys
+- **React** with TypeScript for the frontend
+- **Leaflet.js** for interactive maps
+- **OpenStreetMap** with Nominatim for geocoding and location search
+- **OSRM** (Open Source Routing Machine) for route calculation between points
+- **Dijkstra's Algorithm** for finding optimal paths
+- **WebAssembly** for high-performance route calculations
+- **Tailwind CSS** and **shadcn/ui** for styling
+- **Vite** for fast development and bundling
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
-- npm or yarn
+- Node.js 16+ and npm
 
 ### Installation
 
-1. Clone the repository
-
 ```bash
-git clone https://github.com/mihirphalke1/route-optimiser.git
-cd route-optimiser
-```
+# Clone the repository
+git clone https://github.com/yourusername/route-optimizer.git
+cd route-optimizer
 
-2. Install dependencies
-
-```bash
+# Install dependencies
 npm install
-# or
-yarn install
-```
 
-3. Start the development server
-
-```bash
+# Start the development server
 npm run dev
-# or
-yarn dev
 ```
 
-4. Open your browser and navigate to `http://localhost:3000`
+## Usage
 
-## 🔧 Technologies Used
+### Smart Trip Planner
 
-- **React**: UI framework for building interactive interfaces
-- **TypeScript**: Type-safe code for better development experience
-- **Tailwind CSS**: Utility-first CSS framework for styling
-- **WebAssembly**: High-performance code for route calculations
-- **Leaflet**: Interactive mapping library
-- **Radix UI**: Accessible component primitives
-- **Lucide Icons**: Beautiful, consistent icon set
+1. Navigate to the Smart Trip Planner page
+2. Search for locations using the search bar
+3. Click on search results to add them to your trip
+4. Click "Find Best Route" to calculate the optimal route
+5. View the route on the map and the ordered list of stops
+6. Use the animation feature to see how the algorithm works
+7. Toggle between light and dark mode using the theme switcher in the header
+8. Export your route as JSON or share it with the dedicated buttons
+9. Switch between travel modes (driving, walking, cycling) using the mode selector
 
-## 💼 Use Cases
+### Route Designer
 
-- **Travel Planning**: Plan vacations and road trips efficiently
-- **Delivery Optimization**: Streamline delivery routes for businesses
-- **Educational Purposes**: Learn about graph algorithms and optimization
-- **Event Planning**: Organize multi-destination events and tours
+1. Navigate to the Route Designer page
+2. Add nodes by clicking on the map
+3. Create connections between nodes
+4. Set weights for connections
+5. Select start and end points
+6. Calculate and visualize the optimal route
 
-## 🌐 Live Demo
+## How It Works
 
-Try out the Route Optimizer right now at [https://route-optimiser.vercel.app](https://route-optimiser.vercel.app)
+The Smart Trip Planner uses a combination of algorithms to find the optimal route:
 
-## 📱 Screenshots
+1. **Graph Construction**: Builds a complete graph where locations are nodes and distances between them are edge weights
+2. **Distance Calculation**: Uses the OpenRouteService API to get real-world travel distances
+3. **Path Finding**: Applies Dijkstra's algorithm to find the shortest path between each pair of locations
+4. **Route Optimization**: Uses the Nearest Neighbor algorithm with 2-opt improvement to solve the Traveling Salesperson Problem
 
-<div align="center">
-  <p>Coming soon</p>
-</div>
+## Accessibility Features
 
-## 📝 License
+- **Responsive Design**: Works on devices of all sizes
+- **Keyboard Navigation**: Fully navigable using keyboard controls
+- **Dark/Light Themes**: Support for different visual preferences and reduced eye strain
+- **High Contrast UI**: Clear visual distinction between UI elements
+- **Screen Reader Support**: Semantic HTML and ARIA attributes for assistive technologies
+
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🙏 Acknowledgements
+## Acknowledgments
 
-- [OpenStreetMap](https://www.openstreetmap.org/) for map data
-- [Leaflet](https://leafletjs.com/) for the interactive mapping library
-- [shadcn/ui](https://ui.shadcn.com/) for beautiful UI components
-- All the open-source contributors who make projects like this possible
-
----
-
-<div align="center">
-  <p>Made with ❤️ by <a href="https://github.com/mihirphalke1">Mihir Phalke</a></p>
-</div>
+- OpenStreetMap contributors
+- The Leaflet.js project
+- OSRM project for the routing engine

@@ -8,27 +8,27 @@ const TripPlannerPage: React.FC = () => {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Navbar />
       <main className="flex-1 flex flex-col">
-        <div className="container py-6 px-4 md:px-6">
-          <h1 className="text-3xl font-bold mb-2">Smart Trip Planner</h1>
-          <p className="text-muted-foreground max-w-3xl mb-3">
+        <div className="container py-4 sm:py-6 px-3 sm:px-4 md:px-6">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Smart Trip Planner</h1>
+          <p className="text-muted-foreground text-sm sm:text-base max-w-3xl mb-3">
             Plan the most efficient routes between multiple destinations using
             advanced routing algorithms. Simply search and add locations, then
             let our optimizer find the shortest path for your journey.
           </p>
           <div className="flex flex-wrap gap-2 mb-4">
-            <div className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
+            <div className="px-2.5 py-1.5 bg-primary/10 text-primary text-xs rounded-full">
               Save time & fuel
             </div>
-            <div className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
+            <div className="px-2.5 py-1.5 bg-primary/10 text-primary text-xs rounded-full">
               Optimized routes
             </div>
-            <div className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
+            <div className="px-2.5 py-1.5 bg-primary/10 text-primary text-xs rounded-full">
               Interactive planning
             </div>
           </div>
         </div>
-        <div className="container px-4 md:px-6 pb-6 flex-1">
-          <div className="bg-card rounded-lg border shadow-sm overflow-hidden h-full">
+        <div className="container px-3 sm:px-4 md:px-6 pb-4 sm:pb-6 flex-1">
+          <div className="bg-card rounded-lg border shadow-sm overflow-hidden h-full min-h-[400px]">
             <TripPlanner defaultCenter={[19.2183, 72.9781]} />
           </div>
         </div>

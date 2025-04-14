@@ -32,28 +32,28 @@ const Landing = ({ wasmLoaded = false }: LandingProps) => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="flex-grow py-12 md:py-24 lg:py-32 relative overflow-hidden">
-        <div className="container flex flex-col items-center gap-4 text-center">
+      <section className="flex-grow py-8 sm:py-12 md:py-24 lg:py-32 relative overflow-hidden">
+        <div className="container flex flex-col items-center gap-4 text-center px-4 sm:px-6">
           <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)] dark:bg-[linear-gradient(to_right,#222_1px,transparent_1px),linear-gradient(to_bottom,#222_1px,transparent_1px)]"></div>
 
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl/none font-bold tracking-tighter">
               Intelligent Route Optimization
             </h1>
-            <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
+            <p className="mx-auto max-w-[700px] text-muted-foreground text-sm sm:text-base md:text-xl">
               Powered by Dijkstra's Algorithm and WebAssembly for real-time,
               high-performance route calculations.
             </p>
           </div>
 
-          <div className="flex flex-col gap-2 min-[400px]:flex-row justify-center mt-6">
+          <div className="flex flex-col gap-2 min-[400px]:flex-row justify-center mt-4 sm:mt-6">
             <Link to="/trip-planner">
-              <Button size="lg" className="gap-1.5">
+              <Button size="lg" className="gap-1.5 w-full sm:w-auto">
                 Try Trip Planner <Map className="h-4 w-4" />
               </Button>
             </Link>
             <Link to="/visualizer">
-              <Button size="lg" variant="outline" className="gap-1.5">
+              <Button size="lg" variant="outline" className="gap-1.5 w-full sm:w-auto">
                 Dijkstra Visualizer <Network className="h-4 w-4" />
               </Button>
             </Link>
@@ -69,7 +69,7 @@ const Landing = ({ wasmLoaded = false }: LandingProps) => {
       </section>
 
       {/* Trip Planner Section */}
-      <section className="py-12 md:py-24 bg-muted/30 overflow-hidden relative">
+      <section className="py-8 sm:py-12 md:py-24 bg-muted/30 overflow-hidden relative">
         {/* Background pattern */}
         <div className="absolute inset-0 opacity-20 pointer-events-none">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -93,10 +93,10 @@ const Landing = ({ wasmLoaded = false }: LandingProps) => {
           </svg>
         </div>
 
-        <div className="container relative">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors bg-primary/10 text-primary">
+        <div className="container relative px-4 sm:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 items-center">
+            <div className="space-y-4 sm:space-y-6">
+              <div className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors bg-primary/10 text-primary">
                 FEATURED
               </div>
               <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">

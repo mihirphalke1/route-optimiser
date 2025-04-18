@@ -41,9 +41,14 @@ const AlgorithmVisualizer = () => {
 
   // Handle moving a node
   const handleNodeMove = (id: string, position: Position) => {
-    setNodes((prevNodes) =>
-      prevNodes.map((node) => (node.id === id ? { ...node, position } : node))
-    );
+    console.log(`Moving node ${id} to position:`, position);
+    
+    // Properly update the node's position without creating duplicates
+    setNodes((prevNodes) => {
+      return prevNodes.map((node) => 
+        node.id === id ? { ...node, position } : node
+      );
+    });
   };
 
   // Handle deleting a node
@@ -207,6 +212,7 @@ const AlgorithmVisualizer = () => {
             isCalculating={isCalculating}
             metric={metric}
             isAddingNode={isAddingNode}
+            toggleAddingNode={toggleAddingNode}
           />
 
           {/* Floating Add Node Button */}

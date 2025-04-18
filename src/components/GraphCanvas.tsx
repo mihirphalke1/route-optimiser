@@ -77,6 +77,16 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
 
   // Animation state
   const [animationInProgress, setAnimationInProgress] = useState(false);
+  const [animationSpeed, setAnimationSpeed] = useState<"slow" | "normal" | "fast">("normal");
+
+  // Get actual animation delay based on speed setting
+  const getAnimationDelay = (): number => {
+    switch (animationSpeed) {
+      case "slow": return 800;
+      case "fast": return 200;
+      default: return 500; // normal speed
+    }
+  };
 
   // Handle window resize
   useEffect(() => {
@@ -110,7 +120,7 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
       // Animate each step with a consistent delay
       for (let i = 0; i < result.steps.length; i++) {
         setVisualSteps(i);
-        await delay(ANIMATION_SPEED);
+        await delay(getAnimationDelay());
       }
 
       // Keep the final state visible
@@ -491,22 +501,31 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
     });
   };
 
-  // Before returning the component JSX 
-  // Check for duplicate nodes that might cause the issue
-  const nodeIds = new Set();
-  const duplicateIds = new Set();
-  
-  // Filter out duplicates before rendering
+  // Filter out any duplicate node IDs
+  // This can happen during drag operations when React state updates cause duplicate renders
+  const nodeIds = new Set<string>();
+  const duplicateIds = new Set<string>();
+
   const uniqueNodes = nodes.filter(node => {
+    // Always keep the node being dragged (it should take precedence over any duplicate)
+    if (lastDraggedNode === node.id) {
+      nodeIds.add(node.id);
+      return true;
+    }
+    
+    // Check for duplicates
     if (nodeIds.has(node.id)) {
       duplicateIds.add(node.id);
-      return false; // Skip this node, it's a duplicate
+      console.warn(`Duplicate node detected with ID: ${node.id}`);
+      
+      // If this is a duplicate but not the dragged node, skip it
+      return false;
     } else {
       nodeIds.add(node.id);
-      return true; // Keep this node
+      return true;
     }
   });
-  
+
   if (duplicateIds.size > 0) {
     console.error("DUPLICATE NODE IDS DETECTED:", Array.from(duplicateIds));
   }
@@ -558,13 +577,17 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
         return;
       }
 
+      // Calculate new position
       const newPosition = {
         x: node.position.x + (currentPos.x - dragStartPos.x),
         y: node.position.y + (currentPos.y - dragStartPos.y),
       };
 
       // Call the parent component's onNodeMove function
+      // This is where the duplication issue can occur if React state updates aren't handled correctly
       onNodeMove(selectedNodeId, newPosition);
+      
+      // Update the drag start position for the next move event
       setDragStartPos(currentPos);
       
       // Prevent any default behavior or event bubbling
@@ -592,6 +615,16 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
       e.stopPropagation();
       setIsDragging(false);
       setDragStartPos(null);
+      
+      // Important: Get the final position of the node and update it one last time
+      // to ensure the node array is consistent
+      if (selectedNodeId) {
+        const node = nodes.find(n => n.id === selectedNodeId);
+        if (node) {
+          // Force a clean update with the final position
+          onNodeMove(selectedNodeId, {...node.position});
+        }
+      }
       
       // Reset last dragged node after a delay to allow rendering to complete
       setTimeout(() => {
@@ -864,7 +897,7 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
 
                     for (let i = startStep; i < result.steps.length; i++) {
                       setVisualSteps(i);
-                      await delay(ANIMATION_SPEED);
+                      await delay(getAnimationDelay());
                       if (!animationInProgress) break;
                     }
 
@@ -895,6 +928,33 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
             >
               Next
             </button>
+          </div>
+          
+          <div className="flex items-center mt-2">
+            <span className="text-xs mr-2">Speed:</span>
+            <div className="flex bg-background rounded-md overflow-hidden">
+              <button 
+                className={`px-2 py-1 text-xs ${animationSpeed === 'slow' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
+                onClick={() => setAnimationSpeed("slow")}
+                disabled={animationInProgress}
+              >
+                Slow
+              </button>
+              <button 
+                className={`px-2 py-1 text-xs ${animationSpeed === 'normal' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
+                onClick={() => setAnimationSpeed("normal")}
+                disabled={animationInProgress}
+              >
+                Normal
+              </button>
+              <button 
+                className={`px-2 py-1 text-xs ${animationSpeed === 'fast' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
+                onClick={() => setAnimationSpeed("fast")}
+                disabled={animationInProgress}
+              >
+                Fast
+              </button>
+            </div>
           </div>
         </div>
       )}

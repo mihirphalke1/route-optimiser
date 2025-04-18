@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import GraphCanvas from "@/components/GraphCanvas";
 import ControlPanel from "@/components/ControlPanel";
@@ -32,6 +32,37 @@ const AlgorithmVisualizer = () => {
   const [metric, setMetric] = useState<MetricType>("cost");
   const [isAddingNode, setIsAddingNode] = useState(false);
 
+  // Add a useEffect to monitor the nodes array for duplicates
+  useEffect(() => {
+    // Check for duplicate nodes by ID
+    const nodeIds = new Set();
+    const duplicates = [];
+    
+    nodes.forEach(node => {
+      if (nodeIds.has(node.id)) {
+        duplicates.push(node.id);
+      } else {
+        nodeIds.add(node.id);
+      }
+    });
+    
+    if (duplicates.length > 0) {
+      console.error("Duplicate node IDs detected in parent component:", duplicates);
+      
+      // Clean up duplicates if they occur
+      setNodes(prevNodes => {
+        const seenIds = new Set();
+        return prevNodes.filter(node => {
+          if (seenIds.has(node.id)) {
+            return false;
+          }
+          seenIds.add(node.id);
+          return true;
+        });
+      });
+    }
+  }, [nodes]);
+
   // Handle adding a node
   const handleNodeAdd = (node: NodePoint) => {
     console.log("Adding node:", node);
@@ -44,7 +75,18 @@ const AlgorithmVisualizer = () => {
     console.log(`Moving node ${id} to position:`, position);
     
     // Properly update the node's position without creating duplicates
+    // React's state updates are batched, so we need to make sure we're properly 
+    // updating the position without causing any unintended side effects
     setNodes((prevNodes) => {
+      // First make sure the node exists and there are no duplicates
+      const nodeExists = prevNodes.some(node => node.id === id);
+      
+      if (!nodeExists) {
+        console.error(`Attempted to move non-existent node: ${id}`);
+        return prevNodes;
+      }
+      
+      // Update the position of the matching node
       return prevNodes.map((node) => 
         node.id === id ? { ...node, position } : node
       );

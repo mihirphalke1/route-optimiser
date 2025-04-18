@@ -34,8 +34,9 @@ const AlgorithmVisualizer = () => {
 
   // Handle adding a node
   const handleNodeAdd = (node: NodePoint) => {
+    console.log("Adding node:", node);
     setNodes((prevNodes) => [...prevNodes, node]);
-    setIsAddingNode(false);
+    // Keep add mode enabled to allow adding multiple nodes
   };
 
   // Handle moving a node
@@ -143,8 +144,11 @@ const AlgorithmVisualizer = () => {
 
   // Toggle node adding mode
   const toggleAddingNode = () => {
-    setIsAddingNode(!isAddingNode);
-    if (!isAddingNode) {
+    const newValue = !isAddingNode;
+    console.log("Toggling add node mode:", { current: isAddingNode, new: newValue });
+    setIsAddingNode(newValue);
+    
+    if (newValue) {
       toast.info("Add Node Mode", {
         description: "Click anywhere on the canvas to add a new node.",
       });
@@ -207,12 +211,19 @@ const AlgorithmVisualizer = () => {
 
           {/* Floating Add Node Button */}
           <Button
-            className="absolute bottom-4 right-4 rounded-full shadow-lg h-12 w-12 p-0"
+            className="absolute bottom-4 right-4 rounded-full shadow-lg h-12 w-12 p-0 z-20"
             variant={isAddingNode ? "default" : "secondary"}
             onClick={toggleAddingNode}
           >
             <Plus className="h-6 w-6" />
           </Button>
+          
+          {/* Mode indicator */}
+          {isAddingNode && (
+            <div className="absolute bottom-20 right-4 bg-primary text-primary-foreground px-3 py-2 rounded-md shadow-md z-20 animate-pulse">
+              Click on canvas to add nodes
+            </div>
+          )}
         </div>
 
         {/* Control & Results Panel */}

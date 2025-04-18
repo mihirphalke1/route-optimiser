@@ -136,42 +136,72 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
     if (!svgRef.current) return { x: 0, y: 0 };
 
     const svgRect = svgRef.current.getBoundingClientRect();
-    return {
-      x: e.clientX - svgRect.left,
-      y: e.clientY - svgRect.top,
-    };
+    console.log("SVG dimensions:", {
+      left: svgRect.left,
+      top: svgRect.top,
+      clientX: e.clientX,
+      clientY: e.clientY
+    });
+    
+    const x = e.clientX - svgRect.left;
+    const y = e.clientY - svgRect.top;
+    
+    return { x, y };
   };
 
   // Handle canvas click for adding nodes
-  const handleCanvasClick = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (isDragging || connectingFrom) return;
-
-    // Only add nodes if in adding mode and clicking on the canvas background
-    if (!isAddingNode && e.target === e.currentTarget) return;
-
-    // If in adding mode and clicking on the background, add a new node
+  const handleCanvasClick = (e: React.MouseEvent<SVGSVGElement | SVGRectElement>) => {
+    console.log("Canvas clicked:", { 
+      isAddingNode, 
+      isDragging, 
+      connectingFrom,
+      target: e.target.tagName,
+      currentTarget: e.currentTarget.tagName
+    });
+    
+    // Don't add nodes if we're dragging or connecting nodes
+    if (isDragging || connectingFrom) {
+      console.log("Ignoring click - dragging or connecting");
+      return;
+    }
+    
+    // Only add nodes if in adding mode
+    if (!isAddingNode) {
+      console.log("Not in adding mode - ignoring click");
+      return;
+    }
+    
+    // IMPORTANT: Don't check e.target === e.currentTarget
+    // Get click coordinates regardless of what was clicked
     const position = getSvgCoordinates(e);
-
+    console.log("Processing click for adding node at position:", position);
+    
     // Check if we're clicking on an existing node
     const clickedOnNode = nodes.some((node) => {
       const dx = node.position.x - position.x;
       const dy = node.position.y - position.y;
       return Math.sqrt(dx * dx + dy * dy) <= NODE_RADIUS;
     });
-
-    // Only proceed if we're clicking on the canvas background (not on another element) and not on an existing node
-    if (isAddingNode && e.target === e.currentTarget && !clickedOnNode) {
-      const newNodeId = `node-${Date.now()}`;
-      onNodeAdd({
-        id: newNodeId,
-        label: `Node ${nodes.length + 1}`,
-        position,
-      });
-
-      toast("Node added successfully", {
-        description: "Click and drag to move it or double-click to delete.",
-      });
+    
+    if (clickedOnNode) {
+      console.log("Click too close to existing node - ignoring");
+      return;
     }
+    
+    // Create a new node
+    const newNodeId = `node-${Date.now()}`;
+    const newNode = {
+      id: newNodeId,
+      label: `Node ${nodes.length + 1}`,
+      position,
+    };
+    
+    console.log("Creating new node:", newNode);
+    onNodeAdd(newNode);
+    
+    toast.success("Node added", {
+      description: "Click and drag to move it or double-click to delete.",
+    });
   };
 
   // Handle node selection
@@ -429,12 +459,18 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full bg-muted rounded-lg overflow-hidden">
+    <div 
+      className="relative w-full h-full bg-muted rounded-lg overflow-hidden"
+      onClick={isAddingNode ? handleCanvasClick : undefined}
+    >
       {/* Toolbar */}
-      <div className="absolute top-4 right-4 flex gap-2 z-10">
+      <div className="absolute top-4 right-4 flex gap-2 z-30">
         <button
           className="px-3 py-1 bg-accent text-accent-foreground text-sm rounded-full shadow-sm hover:bg-accent/80 transition-colors"
-          onClick={toggleCostLabels}
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent click from reaching canvas
+            toggleCostLabels();
+          }}
         >
           {showCosts ? "Hide Weights" : "Show Weights"}
         </button>
@@ -442,21 +478,25 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
 
       {/* Algorithm step counter */}
       {result && result.steps && result.steps.length > 0 && (
-        <div className="absolute bottom-4 left-4 bg-card rounded-md shadow-md p-2 z-10">
+        <div className="absolute bottom-4 left-4 bg-card rounded-md shadow-md p-2 z-30">
           <div className="text-xs font-medium mb-1">
             Algorithm Step: {visualSteps + 1} / {result.steps.length}
           </div>
           <div className="flex gap-2">
             <button
               className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded hover:bg-primary/80"
-              onClick={() => setVisualSteps(Math.max(0, visualSteps - 1))}
+              onClick={(e) => {
+                e.stopPropagation();
+                setVisualSteps(Math.max(0, visualSteps - 1));
+              }}
               disabled={visualSteps <= 0 || animationInProgress}
             >
               Prev
             </button>
             <button
               className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded hover:bg-primary/80"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 if (animationInProgress) {
                   // Stop animation
                   setAnimationInProgress(false);
@@ -488,11 +528,12 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
             </button>
             <button
               className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded hover:bg-primary/80"
-              onClick={() =>
+              onClick={(e) => {
+                e.stopPropagation();
                 setVisualSteps(
                   Math.min(result.steps.length - 1, visualSteps + 1)
-                )
-              }
+                );
+              }}
               disabled={
                 visualSteps >= result.steps.length - 1 || animationInProgress
               }
@@ -504,10 +545,13 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
       )}
 
       {connectingFrom && (
-        <div className="absolute top-4 left-4 py-2 px-4 bg-card shadow-md rounded-lg z-10 animate-fade-in">
+        <div className="absolute top-4 left-4 py-2 px-4 bg-card shadow-md rounded-lg z-30 animate-fade-in">
           <p className="text-sm">Click on another node to connect</p>
           <button
-            onClick={() => setConnectingFrom(null)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setConnectingFrom(null);
+            }}
             className="text-xs text-primary hover:underline mt-1"
           >
             Cancel
@@ -518,11 +562,12 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
       <svg
         ref={svgRef}
         viewBox={viewBox}
-        className="w-full h-full"
+        className={`w-full h-full ${isAddingNode ? 'cursor-crosshair' : ''}`}
         onClick={handleCanvasClick}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        style={{ pointerEvents: "all" }}
       >
         {/* Grid Background */}
         <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
@@ -533,7 +578,29 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
             strokeWidth="0.5"
           />
         </pattern>
-        <rect width="100%" height="100%" fill="url(#grid)" />
+        {/* This rect acts as our main click target for adding nodes */}
+        <rect 
+          width="100%" 
+          height="100%" 
+          fill="url(#grid)"
+          onClick={isAddingNode ? handleCanvasClick : undefined}
+          style={{ 
+            cursor: isAddingNode ? 'crosshair' : 'default',
+            pointerEvents: isAddingNode ? 'all' : 'none'
+          }}
+        />
+
+        {/* Adding mode indicator */}
+        {isAddingNode && (
+          <rect 
+            width="100%" 
+            height="100%" 
+            fill="hsl(var(--primary) / 0.05)" 
+            stroke="hsl(var(--primary) / 0.3)" 
+            strokeWidth="4" 
+            strokeDasharray="10 5"
+          />
+        )}
 
         {/* Edges */}
         {edges.map((edge) => {
@@ -664,8 +731,8 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
       </svg>
 
       {/* Instructions overlay for empty state */}
-      {nodes.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-10">
+      {nodes.length === 0 && !isAddingNode && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-20">
           <div className="max-w-md p-6 bg-card rounded-lg shadow-lg text-center">
             <h3 className="text-xl font-bold mb-4">Getting Started</h3>
             <p className="mb-3">
@@ -685,7 +752,8 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
             </p>
             <button
               className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 const demoNodes = [
                   {
                     id: "node-1",

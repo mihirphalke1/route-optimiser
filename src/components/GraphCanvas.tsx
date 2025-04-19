@@ -56,12 +56,15 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
   const [dragStartPos, setDragStartPos] = useState<Position | null>(null);
   const [connectingFrom, setConnectingFrom] = useState<string | null>(null);
   const [isConnectingDrag, setIsConnectingDrag] = useState(false);
-  const [connectingLine, setConnectingLine] = useState<{start: Position, end: Position} | null>(null);
+  const [connectingLine, setConnectingLine] = useState<{
+    start: Position;
+    end: Position;
+  } | null>(null);
   const [visualSteps, setVisualSteps] = useState<number>(-1);
   const [showCosts, setShowCosts] = useState(true);
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
   const [dragCooldown, setDragCooldown] = useState(false);
-  
+
   // Keep track of the last dragged node to avoid visual duplicates
   const [lastDraggedNode, setLastDraggedNode] = useState<string | null>(null);
 
@@ -69,22 +72,33 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
   const [isConnectingMode, setIsConnectingMode] = useState(false);
   const [weightDialogOpen, setWeightDialogOpen] = useState(false);
   const [edgeWeight, setEdgeWeight] = useState<number>(1);
-  const [pendingConnection, setPendingConnection] = useState<{source: string, target: string} | null>(null);
+  const [pendingConnection, setPendingConnection] = useState<{
+    source: string;
+    target: string;
+  } | null>(null);
 
   // New state for the node selection mode
   const [isSelectMode, setIsSelectMode] = useState(false);
-  const [nodeSelectionMenu, setNodeSelectionMenu] = useState<{nodeId: string, position: Position} | null>(null);
+  const [nodeSelectionMenu, setNodeSelectionMenu] = useState<{
+    nodeId: string;
+    position: Position;
+  } | null>(null);
 
   // Animation state
   const [animationInProgress, setAnimationInProgress] = useState(false);
-  const [animationSpeed, setAnimationSpeed] = useState<"slow" | "normal" | "fast">("normal");
+  const [animationSpeed, setAnimationSpeed] = useState<
+    "slow" | "normal" | "fast"
+  >("normal");
 
   // Get actual animation delay based on speed setting
   const getAnimationDelay = (): number => {
     switch (animationSpeed) {
-      case "slow": return 800;
-      case "fast": return 200;
-      default: return 500; // normal speed
+      case "slow":
+        return 800;
+      case "fast":
+        return 200;
+      default:
+        return 500; // normal speed
     }
   };
 
@@ -168,75 +182,96 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
       left: svgRect.left,
       top: svgRect.top,
       clientX: e.clientX,
-      clientY: e.clientY
+      clientY: e.clientY,
     });
-    
+
     const x = e.clientX - svgRect.left;
     const y = e.clientY - svgRect.top;
-    
+
     return { x, y };
   };
 
   // Handle canvas click for adding nodes
-  const handleCanvasClick = (e: React.MouseEvent<SVGSVGElement | SVGRectElement>) => {
-    console.log("Canvas clicked:", { 
-      isAddingNode, 
+  const handleCanvasClick = (e: React.MouseEvent) => {
+    console.log("Canvas clicked:", {
+      isAddingNode,
       isDragging,
       dragCooldown,
       connectingFrom,
-      target: e.target.tagName,
-      currentTarget: e.currentTarget.tagName
+      target: e.target instanceof Element ? e.target.tagName : "unknown",
+      currentTarget:
+        e.currentTarget instanceof Element
+          ? e.currentTarget.tagName
+          : "unknown",
     });
-    
+
     // Don't add nodes if we're dragging, in cooldown, or connecting nodes
     if (isDragging || dragCooldown || connectingFrom) {
       console.log("Ignoring click - dragging, cooldown or connecting");
       return;
     }
-    
+
     // Only add nodes if in adding mode
     if (!isAddingNode) {
       console.log("Not in adding mode - ignoring click");
       return;
     }
-    
+
     // IMPORTANT: Don't check e.target === e.currentTarget
     // Get click coordinates regardless of what was clicked
     const position = getSvgCoordinates(e);
     console.log("Processing click for adding node at position:", position);
-    
+
     // Check if we're clicking on an existing node
     const clickedOnNode = nodes.some((node) => {
       const dx = node.position.x - position.x;
       const dy = node.position.y - position.y;
       return Math.sqrt(dx * dx + dy * dy) <= NODE_RADIUS;
     });
-    
+
     if (clickedOnNode) {
       console.log("Click too close to existing node - ignoring");
       return;
     }
-    
+
+    // Get the highest number from existing node labels to ensure sequential numbering
+    let nextNodeNumber = 1;
+    if (nodes.length > 0) {
+      // Extract numbers from node labels (format: "Node X")
+      const nodeNumbers = nodes
+        .map((node) => {
+          const match = node.label.match(/Node (\d+)/);
+          return match ? parseInt(match[1], 10) : 0;
+        })
+        .filter((num) => !isNaN(num));
+
+      // Get the next sequential number
+      if (nodeNumbers.length > 0) {
+        nextNodeNumber = Math.max(...nodeNumbers) + 1;
+      }
+    }
+
     // Create a new node
     const newNodeId = `node-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
     const newNode = {
       id: newNodeId,
-      label: `Node ${nodes.length + 1}`,
+      label: `Node ${nextNodeNumber}`,
       position,
     };
-    
+
     console.log("Creating new node:", newNode);
     onNodeAdd(newNode);
-    
+
     toast.success("Node added", {
       description: "Click and drag to move it or double-click to delete.",
     });
-    
+
     // Show a hint for connecting nodes if this is the second node or more
     if (nodes.length >= 1) {
       setTimeout(() => {
         toast.info("Connect nodes with Ctrl+Drag", {
-          description: "Hold Ctrl (or Cmd) key and drag from one node to another to connect them.",
+          description:
+            "Hold Ctrl (or Cmd) key and drag from one node to another to connect them.",
         });
       }, 1500);
     }
@@ -247,20 +282,21 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
     e.stopPropagation();
     // Don't allow connection mode when adding nodes
     if (isAddingNode) return;
-    
+
     const newValue = !isConnectingMode;
     setIsConnectingMode(newValue);
-    
+
     // Clear any selected nodes when toggling
     setSelectedNodeId(null);
     setConnectingFrom(null);
-    
+
     // Exit select mode when entering connect mode
     if (newValue) {
       setIsSelectMode(false);
       setNodeSelectionMenu(null);
       toast.info("Connect Nodes Mode", {
-        description: "Click on a node to start a connection, then click on another node to connect them.",
+        description:
+          "Click on a node to start a connection, then click on another node to connect them.",
       });
     } else {
       toast.info("Connect Mode Disabled", {
@@ -274,10 +310,10 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
     e.stopPropagation();
     // Don't allow select mode when adding nodes
     if (isAddingNode) return;
-    
+
     const newValue = !isSelectMode;
     setIsSelectMode(newValue);
-    
+
     // Exit connect mode when entering select mode
     if (newValue) {
       setIsConnectingMode(false);
@@ -298,11 +334,11 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
     if (!connectingFrom) {
       // First node selection
       setConnectingFrom(nodeId);
-      const node = nodes.find(n => n.id === nodeId);
+      const node = nodes.find((n) => n.id === nodeId);
       if (node) {
         setConnectingLine({
           start: node.position,
-          end: node.position
+          end: node.position,
         });
       }
       toast.info("First node selected", {
@@ -312,7 +348,7 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
       // Second node selection - open weight dialog
       setPendingConnection({
         source: connectingFrom,
-        target: nodeId
+        target: nodeId,
       });
       setWeightDialogOpen(true);
     }
@@ -321,12 +357,14 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
   // Complete connection with the provided weight
   const completeConnection = () => {
     if (!pendingConnection) return;
-    
+
     // Check if edge already exists
     const edgeExists = edges.some(
       (edge) =>
-        (edge.source === pendingConnection.source && edge.target === pendingConnection.target) ||
-        (edge.source === pendingConnection.target && edge.target === pendingConnection.source)
+        (edge.source === pendingConnection.source &&
+          edge.target === pendingConnection.target) ||
+        (edge.source === pendingConnection.target &&
+          edge.target === pendingConnection.source)
     );
 
     if (!edgeExists) {
@@ -340,7 +378,7 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
         time: Math.round(edgeWeight * 5) / 10,
         distance: Math.round(edgeWeight * 8) / 10,
       });
-      
+
       toast.success("Connection added", {
         description: `Edge created with weight: ${edgeWeight}`,
       });
@@ -349,7 +387,7 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
         description: "These nodes are already connected.",
       });
     }
-    
+
     // Reset the connection state
     setConnectingFrom(null);
     setConnectingLine(null);
@@ -357,7 +395,7 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
     setWeightDialogOpen(false);
     setEdgeWeight(1);
   };
-  
+
   // Cancel the pending connection
   const cancelConnection = () => {
     setConnectingFrom(null);
@@ -368,37 +406,44 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
   };
 
   // Handle node selection in selection mode
-  const handleSelectionModeNodeClick = (e: React.MouseEvent, nodeId: string) => {
+  const handleSelectionModeNodeClick = (
+    e: React.MouseEvent,
+    nodeId: string
+  ) => {
     e.stopPropagation();
-    
-    const node = nodes.find(n => n.id === nodeId);
+
+    const node = nodes.find((n) => n.id === nodeId);
     if (!node) return;
-    
+
     // Show the selection menu
     setNodeSelectionMenu({
       nodeId,
-      position: node.position
+      position: node.position,
     });
   };
-  
+
   // Set node as start
   const setNodeAsStart = (nodeId: string) => {
     setSourceNodeId(nodeId === sourceNodeId ? null : nodeId);
     setNodeSelectionMenu(null);
     toast.success("Start node set", {
-      description: `Node ${nodes.find(n => n.id === nodeId)?.label || nodeId} is now the start node.`
+      description: `Node ${
+        nodes.find((n) => n.id === nodeId)?.label || nodeId
+      } is now the start node.`,
     });
   };
-  
+
   // Set node as destination
   const setNodeAsDestination = (nodeId: string) => {
     setDestinationNodeId(nodeId === destinationNodeId ? null : nodeId);
     setNodeSelectionMenu(null);
     toast.success("Destination node set", {
-      description: `Node ${nodes.find(n => n.id === nodeId)?.label || nodeId} is now the destination node.`
+      description: `Node ${
+        nodes.find((n) => n.id === nodeId)?.label || nodeId
+      } is now the destination node.`,
     });
   };
-  
+
   // Close the node selection menu
   const closeNodeSelectionMenu = () => {
     setNodeSelectionMenu(null);
@@ -506,18 +551,18 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
   const nodeIds = new Set<string>();
   const duplicateIds = new Set<string>();
 
-  const uniqueNodes = nodes.filter(node => {
+  const uniqueNodes = nodes.filter((node) => {
     // Always keep the node being dragged (it should take precedence over any duplicate)
     if (lastDraggedNode === node.id) {
       nodeIds.add(node.id);
       return true;
     }
-    
+
     // Check for duplicates
     if (nodeIds.has(node.id)) {
       duplicateIds.add(node.id);
       console.warn(`Duplicate node detected with ID: ${node.id}`);
-      
+
       // If this is a duplicate but not the dragged node, skip it
       return false;
     } else {
@@ -529,48 +574,51 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
   if (duplicateIds.size > 0) {
     console.error("DUPLICATE NODE IDS DETECTED:", Array.from(duplicateIds));
   }
-  
-  // Handle node drag start 
+
+  // Handle node drag start
   const handleNodeDragStart = (e: React.MouseEvent, nodeId: string) => {
     console.log(`Starting drag for node: ${nodeId}`);
-    
+
     e.stopPropagation();
     e.preventDefault(); // Prevent any other handlers from firing
-    
+
     // Start connection dragging if holding Ctrl key
     if (e.ctrlKey || e.metaKey) {
       console.log("Starting connection drag from node:", nodeId);
       setConnectingFrom(nodeId);
       setIsConnectingDrag(true);
-      const node = nodes.find(n => n.id === nodeId);
+      const node = nodes.find((n) => n.id === nodeId);
       if (node) {
         setConnectingLine({
           start: node.position,
-          end: node.position
+          end: node.position,
         });
       }
       return;
     }
-    
+
     // Regular node dragging
     setSelectedNodeId(nodeId);
     setIsDragging(true);
     setLastDraggedNode(nodeId); // Track which node is being dragged
     setDragStartPos(getSvgCoordinates(e));
-    
+
     // Log current nodes state for debugging
-    console.log(`Node drag start - Current nodes:`, nodes.map(n => n.id));
+    console.log(
+      `Node drag start - Current nodes:`,
+      nodes.map((n) => n.id)
+    );
   };
 
   // Handle node dragging and connection line drawing
   const handleMouseMove = (e: React.MouseEvent) => {
     const currentPos = getSvgCoordinates(e);
-    
+
     // Case 1: Dragging a node to move it
     if (isDragging && selectedNodeId && dragStartPos) {
       // Log to debug what node is being dragged
       console.log(`Dragging node: ${selectedNodeId}`);
-      
+
       const node = nodes.find((n) => n.id === selectedNodeId);
       if (!node) {
         console.error(`Node with ID ${selectedNodeId} not found during drag`);
@@ -586,22 +634,22 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
       // Call the parent component's onNodeMove function
       // This is where the duplication issue can occur if React state updates aren't handled correctly
       onNodeMove(selectedNodeId, newPosition);
-      
+
       // Update the drag start position for the next move event
       setDragStartPos(currentPos);
-      
+
       // Prevent any default behavior or event bubbling
       e.preventDefault();
       e.stopPropagation();
     }
-    
+
     // Case 2: Dragging to create a connection
     if (isConnectingDrag && connectingFrom) {
-      const sourceNode = nodes.find(n => n.id === connectingFrom);
+      const sourceNode = nodes.find((n) => n.id === connectingFrom);
       if (sourceNode) {
         setConnectingLine({
           start: sourceNode.position,
-          end: currentPos
+          end: currentPos,
         });
       }
     }
@@ -615,22 +663,22 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
       e.stopPropagation();
       setIsDragging(false);
       setDragStartPos(null);
-      
+
       // Important: Get the final position of the node and update it one last time
       // to ensure the node array is consistent
       if (selectedNodeId) {
-        const node = nodes.find(n => n.id === selectedNodeId);
+        const node = nodes.find((n) => n.id === selectedNodeId);
         if (node) {
           // Force a clean update with the final position
-          onNodeMove(selectedNodeId, {...node.position});
+          onNodeMove(selectedNodeId, { ...node.position });
         }
       }
-      
+
       // Reset last dragged node after a delay to allow rendering to complete
       setTimeout(() => {
         setLastDraggedNode(null);
       }, 50);
-      
+
       // Set cooldown flag to prevent node creation right after dragging
       setDragCooldown(true);
       // Reset cooldown after a short delay
@@ -639,18 +687,18 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
         console.log("Drag cooldown ended");
       }, 300);
     }
-    
+
     // For connection dragging - check if we're over another node
     if (isConnectingDrag && connectingFrom && connectingLine) {
       const mousePos = getSvgCoordinates(e);
-      
+
       // Find if we released on a node
-      const targetNode = nodes.find(node => {
+      const targetNode = nodes.find((node) => {
         const dx = node.position.x - mousePos.x;
         const dy = node.position.y - mousePos.y;
         return Math.sqrt(dx * dx + dy * dy) <= NODE_RADIUS;
       });
-      
+
       // If we found a target node that's not the source node
       if (targetNode && targetNode.id !== connectingFrom) {
         // Check if edge already exists
@@ -682,7 +730,7 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
           });
         }
       }
-      
+
       // Reset connection dragging state
       setIsConnectingDrag(false);
       setConnectingFrom(null);
@@ -826,13 +874,13 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
   };
 
   return (
-    <div 
+    <div
       className="relative w-full h-full bg-muted rounded-lg overflow-hidden"
       onClick={(e) => {
         // Only process container clicks when in add node mode and not during dragging
         if (!isAddingNode || isDragging) return;
         handleCanvasClick(e);
-        
+
         // Close node selection menu when clicking elsewhere
         if (nodeSelectionMenu) {
           closeNodeSelectionMenu();
@@ -842,13 +890,21 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
       {/* Toolbar */}
       <div className="absolute top-4 right-4 flex gap-2 z-30">
         <button
-          className={`px-3 py-1 ${isSelectMode ? 'bg-primary text-primary-foreground' : 'bg-accent text-accent-foreground'} text-sm rounded-full shadow-sm hover:bg-accent/80 transition-colors`}
+          className={`px-3 py-1 ${
+            isSelectMode
+              ? "bg-primary text-primary-foreground"
+              : "bg-accent text-accent-foreground"
+          } text-sm rounded-full shadow-sm hover:bg-accent/80 transition-colors`}
           onClick={toggleSelectMode}
         >
           {isSelectMode ? "Exit Selection Mode" : "Set Start/End"}
         </button>
         <button
-          className={`px-3 py-1 ${isConnectingMode ? 'bg-primary text-primary-foreground' : 'bg-accent text-accent-foreground'} text-sm rounded-full shadow-sm hover:bg-accent/80 transition-colors`}
+          className={`px-3 py-1 ${
+            isConnectingMode
+              ? "bg-primary text-primary-foreground"
+              : "bg-accent text-accent-foreground"
+          } text-sm rounded-full shadow-sm hover:bg-accent/80 transition-colors`}
           onClick={toggleConnectionMode}
         >
           {isConnectingMode ? "Exit Connect Mode" : "Connect Nodes"}
@@ -929,26 +985,38 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
               Next
             </button>
           </div>
-          
+
           <div className="flex items-center mt-2">
             <span className="text-xs mr-2">Speed:</span>
             <div className="flex bg-background rounded-md overflow-hidden">
-              <button 
-                className={`px-2 py-1 text-xs ${animationSpeed === 'slow' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
+              <button
+                className={`px-2 py-1 text-xs ${
+                  animationSpeed === "slow"
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-muted"
+                }`}
                 onClick={() => setAnimationSpeed("slow")}
                 disabled={animationInProgress}
               >
                 Slow
               </button>
-              <button 
-                className={`px-2 py-1 text-xs ${animationSpeed === 'normal' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
+              <button
+                className={`px-2 py-1 text-xs ${
+                  animationSpeed === "normal"
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-muted"
+                }`}
                 onClick={() => setAnimationSpeed("normal")}
                 disabled={animationInProgress}
               >
                 Normal
               </button>
-              <button 
-                className={`px-2 py-1 text-xs ${animationSpeed === 'fast' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
+              <button
+                className={`px-2 py-1 text-xs ${
+                  animationSpeed === "fast"
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-muted"
+                }`}
                 onClick={() => setAnimationSpeed("fast")}
                 disabled={animationInProgress}
               >
@@ -983,8 +1051,8 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
         <div className="absolute top-4 left-4 py-2 px-4 bg-primary text-primary-foreground shadow-md rounded-lg z-30 animate-fade-in">
           <p className="text-sm font-medium">Connection Mode</p>
           <p className="text-xs mt-1">
-            {connectingFrom 
-              ? "Now click on another node to connect to it" 
+            {connectingFrom
+              ? "Now click on another node to connect to it"
               : "Click on a node to start a connection"}
           </p>
           <button
@@ -1018,13 +1086,16 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
       {/* Weight dialog */}
       {weightDialogOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-card rounded-lg shadow-lg p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
+          <div
+            className="bg-card rounded-lg shadow-lg p-6 max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-lg font-bold mb-4">Set Connection Weight</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Enter the weight for this connection. This value represents the edge cost
-              (time and distance will be calculated proportionally).
+              Enter the weight for this connection. This value represents the
+              edge cost (time and distance will be calculated proportionally).
             </p>
-            
+
             <div className="flex flex-col gap-2 mb-6">
               <label className="text-sm font-medium">Weight:</label>
               <input
@@ -1037,7 +1108,7 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
                 autoFocus
               />
             </div>
-            
+
             <div className="flex justify-end gap-2">
               <button
                 onClick={cancelConnection}
@@ -1058,7 +1129,7 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
 
       {/* Node selection popup menu */}
       {nodeSelectionMenu && (
-        <div 
+        <div
           className="absolute z-40"
           style={{
             left: `${nodeSelectionMenu.position.x}px`,
@@ -1087,7 +1158,7 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
               Cancel
             </button>
           </div>
-          <div 
+          <div
             className="w-4 h-4 bg-card transform rotate-45 absolute -bottom-2 left-1/2 -translate-x-1/2"
             style={{ zIndex: -1 }}
           ></div>
@@ -1097,12 +1168,12 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
       <svg
         ref={svgRef}
         viewBox={viewBox}
-        className={`w-full h-full ${isAddingNode ? 'cursor-crosshair' : ''}`}
+        className={`w-full h-full ${isAddingNode ? "cursor-crosshair" : ""}`}
         onClick={(e) => {
           // Only process container clicks when in add node mode and not during dragging
           if (!isAddingNode || isDragging) return;
           handleCanvasClick(e);
-          
+
           // Close node selection menu when clicking elsewhere
           if (nodeSelectionMenu) {
             closeNodeSelectionMenu();
@@ -1123,21 +1194,21 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
           />
         </pattern>
         {/* This rect acts as our main click target for adding nodes */}
-        <rect 
-          width="100%" 
-          height="100%" 
+        <rect
+          width="100%"
+          height="100%"
           fill="url(#grid)"
           onClick={(e) => {
             // Only process container clicks when in add node mode and not during dragging
             if (!isAddingNode || isDragging) return;
             handleCanvasClick(e);
           }}
-          style={{ 
-            cursor: isAddingNode ? 'crosshair' : 'default',
-            pointerEvents: isAddingNode ? 'all' : 'none'
+          style={{
+            cursor: isAddingNode ? "crosshair" : "default",
+            pointerEvents: isAddingNode ? "all" : "none",
           }}
         />
-        
+
         {/* Connection line being dragged */}
         {isConnectingDrag && connectingLine && (
           <path
@@ -1151,12 +1222,12 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
 
         {/* Adding mode indicator */}
         {isAddingNode && (
-          <rect 
-            width="100%" 
-            height="100%" 
-            fill="hsl(var(--primary) / 0.05)" 
-            stroke="hsl(var(--primary) / 0.3)" 
-            strokeWidth="4" 
+          <rect
+            width="100%"
+            height="100%"
+            fill="hsl(var(--primary) / 0.05)"
+            stroke="hsl(var(--primary) / 0.3)"
+            strokeWidth="4"
             strokeDasharray="10 5"
           />
         )}
@@ -1301,7 +1372,8 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
               on the canvas to add nodes.
             </p>
             <p className="mb-3">
-              Connect nodes by holding Ctrl/Cmd and dragging from one node to another.
+              Connect nodes by holding Ctrl/Cmd and dragging from one node to
+              another.
             </p>
             <p className="mb-3">Hold Shift and click to set a starting node.</p>
             <p className="mb-3">

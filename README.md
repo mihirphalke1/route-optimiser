@@ -2,6 +2,18 @@
 
 An intelligent route optimization tool with interactive visualizations, powered by Dijkstra's algorithm and WebAssembly.
 
+## Overview
+
+Route Optimizer is an intelligent trip planning platform that helps you find the most efficient route between multiple destinations. Using advanced algorithms like Dijkstra's, enhanced with WebAssembly performance, it calculates the optimal path to visit all your locations while minimizing travel distance and time.
+
+## Demo
+
+<div align="center">
+  <img src="public/route-optimizer-demo.gif" alt="Route Optimizer Demo" width="800">
+</div>
+
+> **Note:** To add your own GIF, create a route-optimizer-demo.gif file in the public folder by recording your application in action. The GIF should demonstrate key features like adding locations, finding the optimal route, and viewing the results.
+
 ## Features
 
 ### Smart Trip Planner
@@ -16,6 +28,8 @@ An intelligent route optimization tool with interactive visualizations, powered 
 - **Dark/Light Mode Support**: Fully integrated with the application theme system for comfortable viewing in any environment
 - **Export and Share**: Export your optimized routes as JSON data or share them with others
 - **Travel Mode Options**: Choose between driving, walking, or cycling modes
+- **Auto-Zoom**: Map automatically adjusts to show all locations after finding a route
+- **Smooth Navigation**: Scroll-to-top button for easy page navigation
 
 ### Route Designer
 
@@ -47,7 +61,6 @@ An intelligent route optimization tool with interactive visualizations, powered 
 ```bash
 # Clone the repository
 git clone https://github.com/mihirphalke1/route-optimizer.git
-
 
 # Install dependencies
 npm install

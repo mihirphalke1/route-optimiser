@@ -53,7 +53,11 @@ const Landing = ({ wasmLoaded = false }: LandingProps) => {
               </Button>
             </Link>
             <Link to="/visualizer">
-              <Button size="lg" variant="outline" className="gap-1.5 w-full sm:w-auto">
+              <Button
+                size="lg"
+                variant="outline"
+                className="gap-1.5 w-full sm:w-auto"
+              >
                 Dijkstra Visualizer <Network className="h-4 w-4" />
               </Button>
             </Link>

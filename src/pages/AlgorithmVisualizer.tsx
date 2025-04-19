@@ -37,22 +37,25 @@ const AlgorithmVisualizer = () => {
     // Check for duplicate nodes by ID
     const nodeIds = new Set();
     const duplicates = [];
-    
-    nodes.forEach(node => {
+
+    nodes.forEach((node) => {
       if (nodeIds.has(node.id)) {
         duplicates.push(node.id);
       } else {
         nodeIds.add(node.id);
       }
     });
-    
+
     if (duplicates.length > 0) {
-      console.error("Duplicate node IDs detected in parent component:", duplicates);
-      
+      console.error(
+        "Duplicate node IDs detected in parent component:",
+        duplicates
+      );
+
       // Clean up duplicates if they occur
-      setNodes(prevNodes => {
+      setNodes((prevNodes) => {
         const seenIds = new Set();
-        return prevNodes.filter(node => {
+        return prevNodes.filter((node) => {
           if (seenIds.has(node.id)) {
             return false;
           }
@@ -73,21 +76,21 @@ const AlgorithmVisualizer = () => {
   // Handle moving a node
   const handleNodeMove = (id: string, position: Position) => {
     console.log(`Moving node ${id} to position:`, position);
-    
+
     // Properly update the node's position without creating duplicates
-    // React's state updates are batched, so we need to make sure we're properly 
+    // React's state updates are batched, so we need to make sure we're properly
     // updating the position without causing any unintended side effects
     setNodes((prevNodes) => {
       // First make sure the node exists and there are no duplicates
-      const nodeExists = prevNodes.some(node => node.id === id);
-      
+      const nodeExists = prevNodes.some((node) => node.id === id);
+
       if (!nodeExists) {
         console.error(`Attempted to move non-existent node: ${id}`);
         return prevNodes;
       }
-      
+
       // Update the position of the matching node
-      return prevNodes.map((node) => 
+      return prevNodes.map((node) =>
         node.id === id ? { ...node, position } : node
       );
     });
@@ -192,9 +195,12 @@ const AlgorithmVisualizer = () => {
   // Toggle node adding mode
   const toggleAddingNode = () => {
     const newValue = !isAddingNode;
-    console.log("Toggling add node mode:", { current: isAddingNode, new: newValue });
+    console.log("Toggling add node mode:", {
+      current: isAddingNode,
+      new: newValue,
+    });
     setIsAddingNode(newValue);
-    
+
     if (newValue) {
       toast.info("Add Node Mode", {
         description: "Click anywhere on the canvas to add a new node.",
@@ -265,7 +271,7 @@ const AlgorithmVisualizer = () => {
           >
             <Plus className="h-6 w-6" />
           </Button>
-          
+
           {/* Mode indicator */}
           {isAddingNode && (
             <div className="absolute bottom-20 right-4 bg-primary text-primary-foreground px-3 py-2 rounded-md shadow-md z-20 animate-pulse">

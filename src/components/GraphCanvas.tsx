@@ -8,6 +8,8 @@ import {
 } from "@/types/graph";
 import { delay } from "@/utils/dijkstra";
 import { toast } from "sonner";
+import DijkstraTable from "./DijkstraTable";
+import { Table } from "lucide-react";
 
 interface GraphCanvasProps {
   nodes: NodePoint[];
@@ -89,6 +91,9 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
   const [animationSpeed, setAnimationSpeed] = useState<
     "slow" | "normal" | "fast"
   >("normal");
+
+  // New state for the computation table
+  const [showComputationTable, setShowComputationTable] = useState(false);
 
   // Get actual animation delay based on speed setting
   const getAnimationDelay = (): number => {
@@ -890,6 +895,39 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
       {/* Toolbar */}
       <div className="absolute top-4 right-4 flex gap-2 z-30">
         <button
+          className={`px-3 py-1 text-sm rounded-full shadow-sm transition-colors flex items-center gap-1 ${
+            result && result.steps && result.steps.length > 0
+              ? showComputationTable
+                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                : "bg-secondary text-secondary-foreground hover:bg-secondary/90 animate-pulse"
+              : "bg-accent text-accent-foreground hover:bg-accent/80"
+          }`}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowComputationTable(!showComputationTable);
+          }}
+          disabled={!result || !result.steps || result.steps.length === 0}
+          title={
+            !result || !result.steps || result.steps.length === 0
+              ? "Run the algorithm first to see the computation table"
+              : showComputationTable
+              ? "Hide computation details"
+              : "Show algorithm computation details"
+          }
+        >
+          <Table className="h-3.5 w-3.5" />
+          {showComputationTable ? "Hide Table" : "Show Table"}
+          {result &&
+            result.steps &&
+            result.steps.length > 0 &&
+            !showComputationTable && (
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+              </span>
+            )}
+        </button>
+        <button
           className={`px-3 py-1 ${
             isSelectMode
               ? "bg-primary text-primary-foreground"
@@ -920,108 +958,131 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
         </button>
       </div>
 
+      {/* Dijkstra Computation Table */}
+      {showComputationTable && (
+        <DijkstraTable
+          nodes={nodes}
+          result={result}
+          currentStep={visualSteps}
+          onClose={() => setShowComputationTable(false)}
+        />
+      )}
+
       {/* Algorithm step counter */}
       {result && result.steps && result.steps.length > 0 && (
         <div className="absolute bottom-4 left-4 bg-card rounded-md shadow-md p-2 z-30">
-          <div className="text-xs font-medium mb-1">
-            Algorithm Step: {visualSteps + 1} / {result.steps.length}
+          <div className="text-xs font-medium mb-1 flex justify-between items-center">
+            <span>
+              Algorithm Step: {visualSteps + 1} / {result.steps.length}
+            </span>
+            {!showComputationTable && (
+              <button
+                onClick={() => setShowComputationTable(true)}
+                className="ml-2 px-1.5 py-0.5 text-2xs bg-primary/10 text-primary rounded hover:bg-primary/20"
+                title="Show detailed computation table"
+              >
+                Show Details
+              </button>
+            )}
           </div>
-          <div className="flex gap-2">
-            <button
-              className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded hover:bg-primary/80"
-              onClick={(e) => {
-                e.stopPropagation();
-                setVisualSteps(Math.max(0, visualSteps - 1));
-              }}
-              disabled={visualSteps <= 0 || animationInProgress}
-            >
-              Prev
-            </button>
-            <button
-              className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded hover:bg-primary/80"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (animationInProgress) {
-                  // Stop animation
-                  setAnimationInProgress(false);
-                } else {
-                  // Start/restart animation
-                  const animate = async () => {
-                    setAnimationInProgress(true);
-                    // Start from current step or beginning
-                    const startStep = visualSteps >= 0 ? visualSteps : 0;
-
-                    for (let i = startStep; i < result.steps.length; i++) {
-                      setVisualSteps(i);
-                      await delay(getAnimationDelay());
-                      if (!animationInProgress) break;
-                    }
-
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-1">
+              <button
+                className="flex-1 px-2 py-1 bg-primary text-primary-foreground text-xs rounded hover:bg-primary/80"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setVisualSteps(Math.max(0, visualSteps - 1));
+                }}
+                disabled={visualSteps <= 0 || animationInProgress}
+              >
+                Prev
+              </button>
+              <button
+                className="flex-1 px-2 py-1 bg-primary text-primary-foreground text-xs rounded hover:bg-primary/80"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (animationInProgress) {
+                    // Stop animation
                     setAnimationInProgress(false);
-                  };
+                  } else {
+                    // Start/restart animation
+                    const animate = async () => {
+                      setAnimationInProgress(true);
+                      // Start from current step or beginning
+                      const startStep = visualSteps >= 0 ? visualSteps : 0;
 
-                  animate();
+                      for (let i = startStep; i < result.steps.length; i++) {
+                        setVisualSteps(i);
+                        await delay(getAnimationDelay());
+                        if (!animationInProgress) break;
+                      }
+
+                      setAnimationInProgress(false);
+                    };
+
+                    animate();
+                  }
+                }}
+              >
+                {animationInProgress
+                  ? "Stop"
+                  : visualSteps >= result.steps.length - 1
+                  ? "Restart"
+                  : "Play"}
+              </button>
+              <button
+                className="flex-1 px-2 py-1 bg-primary text-primary-foreground text-xs rounded hover:bg-primary/80"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setVisualSteps(
+                    Math.min(result.steps.length - 1, visualSteps + 1)
+                  );
+                }}
+                disabled={
+                  visualSteps >= result.steps.length - 1 || animationInProgress
                 }
-              }}
-            >
-              {animationInProgress
-                ? "Stop"
-                : visualSteps >= result.steps.length - 1
-                ? "Restart"
-                : "Play"}
-            </button>
-            <button
-              className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded hover:bg-primary/80"
-              onClick={(e) => {
-                e.stopPropagation();
-                setVisualSteps(
-                  Math.min(result.steps.length - 1, visualSteps + 1)
-                );
-              }}
-              disabled={
-                visualSteps >= result.steps.length - 1 || animationInProgress
-              }
-            >
-              Next
-            </button>
-          </div>
+              >
+                Next
+              </button>
+            </div>
 
-          <div className="flex items-center mt-2">
-            <span className="text-xs mr-2">Speed:</span>
-            <div className="flex bg-background rounded-md overflow-hidden">
-              <button
-                className={`px-2 py-1 text-xs ${
-                  animationSpeed === "slow"
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-muted"
-                }`}
-                onClick={() => setAnimationSpeed("slow")}
-                disabled={animationInProgress}
-              >
-                Slow
-              </button>
-              <button
-                className={`px-2 py-1 text-xs ${
-                  animationSpeed === "normal"
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-muted"
-                }`}
-                onClick={() => setAnimationSpeed("normal")}
-                disabled={animationInProgress}
-              >
-                Normal
-              </button>
-              <button
-                className={`px-2 py-1 text-xs ${
-                  animationSpeed === "fast"
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-muted"
-                }`}
-                onClick={() => setAnimationSpeed("fast")}
-                disabled={animationInProgress}
-              >
-                Fast
-              </button>
+            <div className="flex items-center">
+              <span className="text-xs mr-2">Speed:</span>
+              <div className="flex flex-1 bg-background rounded-md overflow-hidden">
+                <button
+                  className={`flex-1 px-2 py-1 text-xs ${
+                    animationSpeed === "slow"
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-muted"
+                  }`}
+                  onClick={() => setAnimationSpeed("slow")}
+                  disabled={animationInProgress}
+                >
+                  Slow
+                </button>
+                <button
+                  className={`flex-1 px-2 py-1 text-xs ${
+                    animationSpeed === "normal"
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-muted"
+                  }`}
+                  onClick={() => setAnimationSpeed("normal")}
+                  disabled={animationInProgress}
+                >
+                  Normal
+                </button>
+                <button
+                  className={`flex-1 px-2 py-1 text-xs ${
+                    animationSpeed === "fast"
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-muted"
+                  }`}
+                  onClick={() => setAnimationSpeed("fast")}
+                  disabled={animationInProgress}
+                >
+                  Fast
+                </button>
+              </div>
             </div>
           </div>
         </div>
